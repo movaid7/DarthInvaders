@@ -1,26 +1,23 @@
 #pragma once
+#include "Global.h"
 
 using namespace std;
-#include "Global.h"	
+
 
 class Enemy
 {
 public:
 	Enemy();
 	~Enemy();
-	Enemy(int, int, int, int, int);
-	void set(int, int, int, int, int);
-	void Move();
+	Enemy(int, int);
+	void set(int, int);
+	void Move(bool);
 
 	int x_pos;
 	int y_pos;
+
 	bool active;
 	int speed;
-
-	//movement bounds
-	int rightbound;
-	int leftbound;
-	int ybound;
 
 	//collision detection variables
 	int boxright;

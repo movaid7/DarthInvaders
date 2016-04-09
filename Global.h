@@ -1,10 +1,9 @@
 #pragma once
 
-const int width = 1024;
-const int height = 768;
-const int sp = 120;										//spacing between sprites
-const int NUM_ENEMY = 5;
 
+	const int sp = 75;										//spacing between sprites
+	const int NUM_COLUMNS = 8;
+	const int NUM_ROWS = 4;
 
 class Global
 {

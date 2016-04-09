@@ -8,27 +8,25 @@ Enemy::~Enemy()
 {
 }
 
-Enemy::Enemy(int x, int y, int rb, int lb, int yb)
+Enemy::Enemy(int x, int y)
 {
 	x_pos = x;
 	y_pos = y;
-	rightbound = rb;
-	leftbound = lb;
-	ybound = yb;
+
 	active = true;
-	speed = 3;
+	speed = 5;
+
+
 	boxright = 60;
 	boxleft= 10;
 	boxheight = 15;
 }
 
-void Enemy::set(int x, int y, int rb, int lb, int yb)
+void Enemy::set(int x, int y)
 {
 	x_pos = x;
 	y_pos = y;
-	rightbound = rb;
-	leftbound = lb;
-	ybound = yb;
+
 	active = true;
 	speed = 3;
 	boxright = 60;
@@ -36,12 +34,11 @@ void Enemy::set(int x, int y, int rb, int lb, int yb)
 	boxheight = 15;
 }
 
-void Enemy::Move()
+void Enemy::Move(bool check)
 {
-	x_pos += speed;
-
-	if (x_pos >= rightbound)
+	if (check == true)
+	{
 		speed *= -1;
-	if (x_pos < leftbound)
-		speed *= -1;
+	}
+	 x_pos += speed;
 }

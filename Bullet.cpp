@@ -1,5 +1,8 @@
 #include "Bullet.h"
 
+extern int width;
+extern int height;
+
 Bullet::Bullet(int X, int Y,int S, bool friendly)
 {
 	x_pos = X;
@@ -19,10 +22,10 @@ void Bullet::UpdateBulletPos(Spaceship &s)
 	y_pos = s.y_pos;
 }
 
-void Bullet::Updatebulletpos(Enemy &e)
+void Bullet::UpdatebulletPos(Enemy &e)
 {
-	x_pos = e.x_pos;
-	y_pos = e.y_pos;
+	x_pos = e.x_pos + 30;
+	y_pos = e.y_pos + 10;
 }
 
 void Bullet::Increment()

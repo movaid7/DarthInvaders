@@ -13,11 +13,12 @@ public:
 	int boxleft;
 	int boxheight;
 	int health;
+	bool active;
 
 	Spaceship(int, int);
 	Spaceship();
-	void MoveSpaceshipUp();
+
 	void MoveSpaceshipLeft();
-	void MoveSpaceshipDown();
+
 	void MoveSpaceshipRight();
 };

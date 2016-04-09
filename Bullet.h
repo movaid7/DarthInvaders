@@ -1,7 +1,8 @@
 #pragma once
 #include "Spaceship.h"
-#include "Global.h"	
 #include "Enemy.h"
+
+
 
 class Bullet {
 
@@ -17,5 +18,5 @@ public:
 	~Bullet();
 	void Increment();
 	void UpdateBulletPos(Spaceship&);
-	void Updatebulletpos(Enemy&);
+	void UpdatebulletPos(Enemy&);
 };

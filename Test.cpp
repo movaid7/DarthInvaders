@@ -4,8 +4,9 @@
 #include<allegro5\allegro_native_dialog.h>
 #include<allegro5\allegro_primitives.h>
 #include<allegro5\allegro_image.h>
-
-#include <string>
+#include <allegro5\allegro_font.h>
+#include <allegro5\allegro_ttf.h>
+#include <allegro5\monitor.h>
 
 #include "Enemy.h"
 #include "Spaceship.h"
@@ -15,26 +16,34 @@
 using namespace std;
 
 //GLOBALS
-enum KEYS {UP, DOWN, LEFT, RIGHT, SPACE};
-bool keys[5] = {false,false,false,false,false};
+enum KEYS {LEFT, RIGHT, SPACE};
+bool keys[5] = {false,false,false};
+bool gameOver = false;
+extern int width;
+extern int height;
+int numAlive = NUM_COLUMNS*NUM_ROWS;
 
-//Initialise
-Spaceship	a(width/2, height*4/5);												
-Bullet		b(a.x_pos, a.y_pos,20,true);
-Bullet		c(0,0,10,false);
-Enemy		arrEnem[NUM_ENEMY];															//array of objects
+//METHODS
+void setEnemy();
+void collideEnemy(int&);
+void collidePlayer();
+void moveDown(int&);
+void enemyShoot();
+void updateBullet();
+bool reachEnd();
+
+//INITIALISE
+Spaceship	player(width/2, height*4/5);
+Bullet		playerBullet(player.x_pos, player.y_pos,10,true);
+Bullet		enemyBullet(0,0,10,false);
+Enemy		arrEnem[NUM_COLUMNS][NUM_ROWS];												//array of objects
+
 
 
 int main(void)
 {
-	//5 random enemies for testing
-	arrEnem[0].set(width/2 - sp,	65, width-300 - sp	,250 - sp	,15);				//left
-	arrEnem[1].set(width/2,			65, width - 300		,250		,15);				//middle
-	arrEnem[2].set(width/2 + sp,	65, width-300 + sp	,250 + sp	,15);				//right 
-	arrEnem[3].set(width/2 - 2*sp,	65, width-300 - 2*sp,250 - 2*sp	,15);					 
-	arrEnem[4].set(width/2 + 2*sp,	65, width-300 + 2*sp,250 + 2*sp	,15);					
-	
-	c.isFriendly = false;
+	setEnemy();
+	enemyBullet.isFriendly = false;
 	srand((unsigned)time(NULL));
 
 	//primitive variables
@@ -50,18 +59,25 @@ int main(void)
 	
 	//Allegro variables
 	ALLEGRO_DISPLAY *DISPLAY = NULL;
+
+	ALLEGRO_BITMAP *picHealth[7];
 	ALLEGRO_BITMAP *picShip = NULL;
 	ALLEGRO_BITMAP *picBullet = NULL;
 	ALLEGRO_BITMAP *picEnemy = NULL;
 	ALLEGRO_EVENT_QUEUE *TestQueue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
+	ALLEGRO_FONT *font25 = NULL;
+	ALLEGRO_FONT *font50 = NULL;
 
 	//Allegro Module Init
 	al_init_image_addon();
-	al_set_new_window_position(400, 100);												//set pos of game window
+	al_set_new_window_position(400, 200);												//set pos of game window
 	DISPLAY = al_create_display(width, height);
+	al_hide_mouse_cursor(DISPLAY);
 	al_init_primitives_addon();
 	al_install_keyboard();
+	al_init_font_addon();
+	al_init_ttf_addon();
 
 	if (!DISPLAY)
 	{
@@ -69,15 +85,27 @@ int main(void)
 		return -1;
 	}
 
+	//Load Pictures
 	picBullet=al_load_bitmap("Lazer.png");
 	picShip =al_load_bitmap("player1.png");
 	picEnemy = al_load_bitmap("enemy.png");
 
+	picHealth[0] = al_load_bitmap("1.png");
+	picHealth[1] = al_load_bitmap("2.png");
+	picHealth[2] = al_load_bitmap("3.png");
+	picHealth[3] = al_load_bitmap("4.png");
+	picHealth[4] = al_load_bitmap("5.png");
+	picHealth[5] = al_load_bitmap("6.png");
+	picHealth[6] = al_load_bitmap("blank.png");
 
+	for (int i = 0; i < 7; i++)
+		al_convert_mask_to_alpha(picHealth[i], al_map_rgb(0, 0, 0));
 
 	al_convert_mask_to_alpha(picShip,al_map_rgb(0,0,0));
 	al_convert_mask_to_alpha(picEnemy, al_map_rgb(0, 0, 0));
 	al_convert_mask_to_alpha(picBullet, al_map_rgb(0, 0, 0));
+
+	al_set_display_icon(DISPLAY, picShip);
 
 	timer=al_create_timer(1.0/FPS);
 
@@ -87,82 +115,36 @@ int main(void)
 	al_register_event_source(TestQueue,al_get_timer_event_source(timer));
 	
 	al_start_timer(timer);
+	int score = 0;
+	int frameCount = 0;
+	font25 = al_load_font("Starjedi.ttf", 27, 0);
+	font50 = al_load_font("Starjedi.ttf", 50, 0);
 
 	while (!done)
 	{
-
 		ALLEGRO_EVENT GETKEY;
 		al_wait_for_event(TestQueue, &GETKEY);
 
-		if (GETKEY.type == ALLEGRO_EVENT_DISPLAY_CLOSE)								//will allow red X to close program
+		if (GETKEY.type == ALLEGRO_EVENT_DISPLAY_CLOSE)								//will allow clicking X button to close program
 		{
 			done = true;
 		}
 		else if (GETKEY.type == ALLEGRO_EVENT_TIMER)
 		{
 			redraw = true;
-			if (keys[UP])
-				a.MoveSpaceshipUp();
-			if (keys[DOWN])
-				a.MoveSpaceshipDown();
+			frameCount++;
 			if (keys[LEFT])
-				a.MoveSpaceshipLeft();
+				player.MoveSpaceshipLeft();
 			if (keys[RIGHT])
-				a.MoveSpaceshipRight();
-			if (keys[SPACE])															//Spacebar will fire
-				b.status = 1;
+				player.MoveSpaceshipRight();
+			if (keys[SPACE])														//Spacebar will fire
+				playerBullet.status = 1;
 
-			for (int i = 0; i < NUM_ENEMY; i++)											//collission detection ahead. Proceed with caution
-			{
-				if (b.status && arrEnem[i].active && b.isFriendly)										//checks if enemy and bullet active
-				{
-					if (b.y_pos - 25 < arrEnem[i].y_pos + arrEnem[i].boxheight			//checks if within box of enemy
-						&& b.y_pos > arrEnem[i].y_pos - arrEnem[i].boxheight
-						&& b.x_pos < arrEnem[i].x_pos + arrEnem[i].boxright
-						&& b.x_pos > arrEnem[i].x_pos - arrEnem[i].boxleft)
-					{
-
-						b.status = 0;												//bullet set to not active
-						arrEnem[i].active = false;									//enemy set to not active
-					}
-				}
-			}
-
-			if (b.status == 0)															//while bullet not active sets pos of ship as initial bullet pos
-				b.UpdateBulletPos(a);
-
-			//Enemy shooting back
-			int randomEnemy;
-
-			for (int i = 0; i < NUM_ENEMY; i++)
-			{
-				if (arrEnem[i].active && !c.status)
-				{
-					randomEnemy = rand() % NUM_ENEMY + 1;
-					if (randomEnemy == i)
-					{
-						c.Updatebulletpos(arrEnem[i]);
-						c.status = 1;
-						//break;
-					}
-
-				}
-			}
-			for (int i = 0; i < NUM_ENEMY; i++)											//collission detection ahead. Proceed with caution
-			{
-				if (c.status && !c.isFriendly)										//checks if enemy and bullet active
-				{
-					if (c.y_pos  < a.y_pos + a.boxheight			//checks if within box of enemy
-						&& c.y_pos > a.y_pos - a.boxheight
-						&& c.x_pos < a.x_pos + a.boxright
-						&& c.x_pos > a.x_pos - a.boxleft)
-					{
-
-						c.status = 0;												//bullet set to not active
-						a.health -= 10;
-					}
-				}
-			}
+			collideEnemy(score);
+			collidePlayer();
+			enemyShoot();
+			moveDown(frameCount);
+			updateBullet();
 		}
 
 		
@@ -172,12 +154,6 @@ int main(void)
 			{
 			case ALLEGRO_KEY_ESCAPE:													//esc to end the game
 				done = true;
-				break;
-			case ALLEGRO_KEY_UP:
-				keys[UP] = true;
-				break;
-			case ALLEGRO_KEY_DOWN:
-				keys[DOWN] = true;
 				break;
 			case ALLEGRO_KEY_RIGHT:
 				keys[RIGHT] = true;
@@ -195,12 +171,6 @@ int main(void)
 		{
 			switch (GETKEY.keyboard.keycode)
 			{
-			case ALLEGRO_KEY_UP:
-				keys[UP] = false;
-				break;
-			case ALLEGRO_KEY_DOWN:
-				keys[DOWN] = false;
-				break;
 			case ALLEGRO_KEY_RIGHT:
 				keys[RIGHT] = false;
 				break;
@@ -217,34 +187,76 @@ int main(void)
 		{
 			redraw = false;
 
-			if (b.status == 1)															//if bullet still active
+			if (!gameOver)
 			{
-				b.Increment();															//bullet will move pos
-				al_draw_bitmap(picBullet, b.x_pos, b.y_pos, 0);							//redraw at new pos
-			}
-
-			if (c.status == 1)
-			{
-				c.Increment();															//bullet will move pos
-				al_draw_bitmap(picBullet, c.x_pos, c.y_pos, 0);
-			}
-			if (a.health > 0)
-			{
-				al_draw_bitmap(picShip, a.x_pos - 45, a.y_pos, 0);
-			}			
-		
-			for (int i = 0; i < NUM_ENEMY;i++)								
-			{
-				if (arrEnem[i].active)													//if enemy is active
+				if (playerBullet.status == 1 && player.active)											//if bullet still active
 				{
-					arrEnem[i].Move();													//enemy pos will change
-					al_draw_bitmap(picEnemy, arrEnem[i].x_pos, arrEnem[i].y_pos, 0);		//redraw at new pos
+					playerBullet.Increment();															//bullet will move pos
+					al_draw_bitmap(picBullet, playerBullet.x_pos, playerBullet.y_pos, 0);				//redraw at new pos
 				}
-			}
-			
 
-			al_flip_display();															//flip display to show all drawn objects
-			al_clear_to_color(al_map_rgb(0, 0, 0));										//background colour
+				if (enemyBullet.status == 1)
+				{
+					enemyBullet.Increment();															//bullet will move pos
+					al_draw_bitmap(picBullet, enemyBullet.x_pos, enemyBullet.y_pos, 0);
+				}
+
+				switch (player.health)
+				{
+				case 60:
+					al_draw_bitmap(picHealth[0], 10, 40, 0);
+					break;
+				case 50:
+					al_draw_bitmap(picHealth[1], 10, 40, 0);
+					break;
+				case 40:
+					al_draw_bitmap(picHealth[2], 10, 40, 0);
+					break;
+				case 30:
+					al_draw_bitmap(picHealth[3], 10, 40, 0);
+					break;
+				case 20:
+					al_draw_bitmap(picHealth[4], 10, 40, 0);
+					break;
+				case 10:
+					al_draw_bitmap(picHealth[5], 10, 40, 0);
+					break;
+				case 0:
+					al_draw_bitmap(picHealth[6], 10, 40, 0);
+					break;
+				}
+
+				if (player.health > 0)
+				{
+					al_draw_bitmap(picShip, player.x_pos - 45, player.y_pos, 0);
+				}
+
+				bool test = reachEnd();
+				for (int i = 0; i < NUM_COLUMNS; i++)
+				{
+					
+
+					for (int j = 0; j < NUM_ROWS; j++)
+					{
+
+						if (arrEnem[i][j].active)
+						{
+							arrEnem[i][j].Move(test);
+							al_draw_bitmap(picEnemy, arrEnem[i][j].x_pos, arrEnem[i][j].y_pos, 0);
+						}
+					}
+									
+				}
+
+				al_draw_textf(font25, al_map_rgb(255, 0, 0), 10, 0, 0, "Score: %i", score);								
+			}
+
+			else
+			{
+				al_draw_textf(font50, al_map_rgb(255, 0, 0), width/2 -250, height/2 -200, 0, "Final Score: %i", score);
+			}
+			al_flip_display();																	//flip display to show all drawn objects
+			al_clear_to_color(al_map_rgb(0, 0, 0));												//background colour
 		 }
 	}
 
@@ -255,6 +267,203 @@ int main(void)
 	al_destroy_bitmap(picEnemy);
 	al_destroy_bitmap(picShip);
 	al_destroy_bitmap(picBullet);
-
+	al_destroy_font(font25);
+	al_destroy_font(font50);
+	for (int i = 0; i < 7; i++)
+		al_destroy_bitmap(picHealth[i]);
+	
 	return 0;
+}
+
+void collidePlayer()
+{
+	if (enemyBullet.status)
+	{
+		if (enemyBullet.y_pos  < player.y_pos + player.boxheight								//checks if within box
+			&& enemyBullet.y_pos > player.y_pos - player.boxheight
+			&& enemyBullet.x_pos < player.x_pos + player.boxright
+			&& enemyBullet.x_pos > player.x_pos - player.boxleft)
+		{
+			enemyBullet.status = 0;																//bullet set to not active
+			player.health -= 10;
+		}
+	}
+	if (player.health == 0)
+	{
+		player.active = false;
+		gameOver = true;
+	}
+}
+
+void setEnemy()
+{
+	//row 1
+	arrEnem[0][0].set(width / 2 - sp, 65);			//left
+	arrEnem[1][0].set(width / 2, 65);			//middle
+	arrEnem[2][0].set(width / 2 + sp, 65);			//right 
+	arrEnem[3][0].set(width / 2 - 2 * sp, 65);
+	arrEnem[4][0].set(width / 2 + 2 * sp, 65);
+	arrEnem[5][0].set(width / 2 - 3 * sp, 65);
+	arrEnem[6][0].set(width / 2 + 3 * sp, 65);
+	arrEnem[7][0].set(width / 2 - 4 * sp, 65);
+
+	//row 2
+	arrEnem[0][1].set(width / 2 - sp, 130);		//left
+	arrEnem[1][1].set(width / 2, 130);			//middle
+	arrEnem[2][1].set(width / 2 + sp, 130);		//right 
+	arrEnem[3][1].set(width / 2 - 2 * sp, 130);
+	arrEnem[4][1].set(width / 2 + 2 * sp, 130);
+	arrEnem[5][1].set(width / 2 - 3 * sp, 130);
+	arrEnem[6][1].set(width / 2 + 3 * sp, 130);
+	arrEnem[7][1].set(width / 2 - 4 * sp, 130);
+
+	//row 3
+	arrEnem[0][2].set(width / 2 - sp, 195);		//left
+	arrEnem[1][2].set(width / 2, 195);			//middle
+	arrEnem[2][2].set(width / 2 + sp, 195);		//right 
+	arrEnem[3][2].set(width / 2 - 2 * sp, 195);
+	arrEnem[4][2].set(width / 2 + 2 * sp, 195);
+	arrEnem[5][2].set(width / 2 - 3 * sp, 195);
+	arrEnem[6][2].set(width / 2 + 3 * sp, 195);
+	arrEnem[7][2].set(width / 2 - 4 * sp, 195);
+
+	//row 4
+	arrEnem[0][3].set(width / 2 - sp, 260);
+	arrEnem[1][3].set(width / 2, 260);
+	arrEnem[2][3].set(width / 2 + sp, 260);
+	arrEnem[3][3].set(width / 2 - 2 * sp, 260);
+	arrEnem[4][3].set(width / 2 + 2 * sp, 260);
+	arrEnem[5][3].set(width / 2 - 3 * sp, 260);
+	arrEnem[6][3].set(width / 2 + 3 * sp, 260);
+	arrEnem[7][3].set(width / 2 - 4 * sp, 260);
+
+}
+
+void collideEnemy(int &score)
+{
+	if (playerBullet.status)
+	{
+		for (int i = 0; i < NUM_COLUMNS; i++)											
+		{
+			for (int j = 0; j < NUM_ROWS; j++)															//collision detection ahead. Proceed with caution
+			{
+				if (arrEnem[i][j].active)																//checks if enemy active
+				{
+					if (playerBullet.y_pos - 25 < arrEnem[i][j].y_pos + arrEnem[i][j].boxheight			//checks if within box of enemy
+						&& playerBullet.y_pos > arrEnem[i][j].y_pos - arrEnem[i][j].boxheight
+						&& playerBullet.x_pos < arrEnem[i][j].x_pos + arrEnem[i][j].boxright
+						&& playerBullet.x_pos > arrEnem[i][j].x_pos - arrEnem[i][j].boxleft)
+					{
+						playerBullet.status = 0;														//bullet set to not active
+						arrEnem[i][j].active = false;													//enemy set to not active
+						switch (j)
+						{
+						case 0:
+							score += 40;
+							break;
+						case 1:
+							score += 20;
+							break;
+						case 2:
+							score += 20;
+							break;						
+						default:
+							score += 10;
+							break;
+						}
+						numAlive--;
+					}
+				}
+			}
+		}
+	}
+}
+
+void moveDown(int &frameCount)
+{
+	int interval;												//how long enemies take to move down depends on how many enemies left
+
+	if (numAlive > 30)
+	{
+		interval = 360;
+	}
+	else if (30 > numAlive && numAlive > 15)
+	{
+		interval = 300;
+	}
+	else if (15 > numAlive && numAlive > 8)
+	{
+		interval = 240;
+	}
+	else if (8 > numAlive && numAlive > 2)
+	{
+		interval = 120;
+	}
+	else
+		interval = 60;
+
+	if (frameCount % interval == 0)
+	{
+		for (int i = 0; i < NUM_COLUMNS; i++)
+		{
+			for (int j = 0; j < NUM_ROWS; j++)
+			{
+				arrEnem[i][j].y_pos += 20;
+			}
+		}
+	}
+}
+
+void enemyShoot()
+{
+	if (!enemyBullet.status)
+	{
+		for (int i = 0; i < NUM_COLUMNS; i++)
+		{
+			for (int j = 0; j < NUM_ROWS; j++)
+			{
+				if (arrEnem[i][j].active)
+				{
+					int randCol = rand() % NUM_COLUMNS;
+					int randRow = rand() % NUM_ROWS;
+					if (randCol == i && randRow == j)
+					{
+						enemyBullet.UpdatebulletPos(arrEnem[i][j]);
+						enemyBullet.status = 1;
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
+void updateBullet()
+{
+	if (playerBullet.status == 0)												//while bullet not active sets pos of ship as initial bullet pos
+		playerBullet.UpdateBulletPos(player);
+}
+
+bool reachEnd() //returns true if any enemy hits either of the sides
+{
+	for (int i = 0; i < NUM_COLUMNS; i++)
+	{
+		for (int j = 0; j < NUM_ROWS; j++)										
+		{
+			if (arrEnem[i][j].active)																//checks if enemy active
+			{
+				if (width-80 < arrEnem[i][j].x_pos && arrEnem[i][j].speed > 0) //if moving to the right and close to right wall
+				{
+					return true;
+					break;
+				}
+				else if (10 > arrEnem[i][j].x_pos && arrEnem[i][j].speed < 0)	//if moving to the left and close to left wall
+				{
+					return true;
+					break;
+				}
+			}
+		}
+	}
+	return false;
 }

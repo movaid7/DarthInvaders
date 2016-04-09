@@ -1,5 +1,7 @@
 #include "Spaceship.h"
 
+extern int width;
+extern int height;
 
 Spaceship::Spaceship(int x, int y)
 {
@@ -8,22 +10,12 @@ Spaceship::Spaceship(int x, int y)
 	boxright = 60;
 	boxleft = 60;
 	boxheight = 15;
-	health = 100;
+	health = 60;
+	active = true;
 }
 
 Spaceship::Spaceship() {}
 
-void Spaceship::MoveSpaceshipUp()	//won't need
-{
-	if (y_pos >= 10)
-		y_pos = y_pos - 7;
-}
-
-void Spaceship::MoveSpaceshipDown()	//won't need
-{
-	if (y_pos<height - 200)
-		y_pos = y_pos + 7;
-}
 
 void Spaceship::MoveSpaceshipLeft()//left bound
 {
