@@ -6,7 +6,8 @@
 #include<allegro5\allegro_image.h>
 #include <allegro5\allegro_font.h>
 #include <allegro5\allegro_ttf.h>
-#include <allegro5\monitor.h>
+#include <allegro5\allegro_audio.h>
+#include <allegro5\allegro_acodec.h>
 
 #include "Enemy.h"
 #include "Spaceship.h"
@@ -18,7 +19,7 @@ using namespace std;
 //GLOBALS
 enum KEYS {LEFT, RIGHT, SPACE};
 bool keys[5] = {false,false,false};
-bool gameOver = false;
+int gameState = 1;
 extern int width;
 extern int height;
 int numAlive = NUM_COLUMNS*NUM_ROWS;
@@ -68,6 +69,11 @@ int main(void)
 	ALLEGRO_TIMER *timer = NULL;
 	ALLEGRO_FONT *font25 = NULL;
 	ALLEGRO_FONT *font50 = NULL;
+	ALLEGRO_SAMPLE *blaster = NULL;
+	ALLEGRO_SAMPLE *explosion = NULL;
+	ALLEGRO_SAMPLE *music = NULL;
+	ALLEGRO_SAMPLE *startGame = NULL;
+
 
 	//Allegro Module Init
 	al_init_image_addon();
@@ -78,6 +84,15 @@ int main(void)
 	al_install_keyboard();
 	al_init_font_addon();
 	al_init_ttf_addon();
+	al_install_audio();
+	al_init_acodec_addon();
+
+	al_reserve_samples(2);
+
+	blaster = al_load_sample("XWing-Laser.ogg");
+	explosion = al_load_sample("Blast.ogg");
+	startGame = al_load_sample("xwing.ogg");
+	music = al_load_sample("Star_Wars.ogg");
 
 	if (!DISPLAY)
 	{
@@ -119,11 +134,13 @@ int main(void)
 	int frameCount = 0;
 	font25 = al_load_font("Starjedi.ttf", 27, 0);
 	font50 = al_load_font("Starjedi.ttf", 50, 0);
-
+	al_play_sample(music, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP, NULL);
+	
 	while (!done)
 	{
 		ALLEGRO_EVENT GETKEY;
 		al_wait_for_event(TestQueue, &GETKEY);
+		
 
 		if (GETKEY.type == ALLEGRO_EVENT_DISPLAY_CLOSE)								//will allow clicking X button to close program
 		{
@@ -138,8 +155,14 @@ int main(void)
 			if (keys[RIGHT])
 				player.MoveSpaceshipRight();
 			if (keys[SPACE])														//Spacebar will fire
-				playerBullet.status = 1;
-
+			{
+				if (playerBullet.status ==0)
+				{
+					al_play_sample(blaster, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+					playerBullet.status = 1;
+				}
+			}
+			
 			collideEnemy(score);
 			collidePlayer();
 			enemyShoot();
@@ -186,13 +209,27 @@ int main(void)
 		if (redraw && al_is_event_queue_empty(TestQueue)) //rendering
 		{
 			redraw = false;
+			if (gameState == 1)
+			{
+				//MENU COMES HERE
 
-			if (!gameOver)
+				// When start game is selected: 
+				al_play_sample(startGame, 1, 0, 2.2, ALLEGRO_PLAYMODE_ONCE, NULL);
+				gameState = 2;
+			}
+
+			else if (gameState ==2)
 			{
 				if (playerBullet.status == 1 && player.active)											//if bullet still active
 				{
-					playerBullet.Increment();															//bullet will move pos
-					al_draw_bitmap(picBullet, playerBullet.x_pos, playerBullet.y_pos, 0);				//redraw at new pos
+						playerBullet.Increment();															//bullet will move pos
+						al_draw_bitmap(picBullet, playerBullet.x_pos, playerBullet.y_pos, 0);				//redraw at new pos	
+						if (playerBullet.y_pos < 20)
+						{
+							playerBullet.status == 0;
+							updateBullet();
+						}
+							
 				}
 
 				if (enemyBullet.status == 1)
@@ -251,8 +288,13 @@ int main(void)
 				al_draw_textf(font25, al_map_rgb(255, 0, 0), 10, 0, 0, "Score: %i", score);								
 			}
 
-			else
+			else if(gameState == 3)
 			{
+				if (player.health == 0)
+				{
+					al_play_sample(explosion, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+					player.health = 1;															// <--- bush method to make it only sound once :p
+				}
 				al_draw_textf(font50, al_map_rgb(255, 0, 0), width/2 -250, height/2 -200, 0, "Final Score: %i", score);
 			}
 			al_flip_display();																	//flip display to show all drawn objects
@@ -261,6 +303,8 @@ int main(void)
 	}
 
 	//Destroy allegro variables
+	al_destroy_sample(blaster);
+	al_destroy_sample(explosion);
 	al_destroy_event_queue(TestQueue);
 	al_destroy_timer(timer);
 	al_destroy_display(DISPLAY);
@@ -287,11 +331,12 @@ void collidePlayer()
 			enemyBullet.status = 0;																//bullet set to not active
 			player.health -= 10;
 		}
-	}
+}
+
 	if (player.health == 0)
 	{
 		player.active = false;
-		gameOver = true;
+		gameState = 3;
 	}
 }
 
@@ -381,7 +426,7 @@ void collideEnemy(int &score)
 
 void moveDown(int &frameCount)
 {
-	int interval;												//how long enemies take to move down depends on how many enemies left
+	int interval = 60;												//how long enemies take to move down depends on how many enemies left
 
 	if (numAlive > 30)
 	{
@@ -399,8 +444,11 @@ void moveDown(int &frameCount)
 	{
 		interval = 120;
 	}
-	else
-		interval = 60;
+	else if (numAlive == 0)
+	{
+		gameState = 3;
+	
+	}
 
 	if (frameCount % interval == 0)
 	{
