@@ -13,17 +13,18 @@
 #include "Spaceship.h"
 #include "Bullet.h"
 #include "Global.h"
+#include "BackGround.h"
 
 using namespace std;
 
 //GLOBALS
 enum KEYS {LEFT, RIGHT, SPACE};
 bool keys[5] = {false,false,false};
-int gameState = 1;
+int gameState = 1;																		//initial gamestate is menu
 extern int width;
 extern int height;
 int numAlive = NUM_COLUMNS*NUM_ROWS;
-
+	
 //METHODS
 void setEnemy();
 void collideEnemy(int&);
@@ -32,14 +33,18 @@ void moveDown(int&);
 void enemyShoot();
 void updateBullet();
 bool reachEnd();
+void InitBackground(BackGround &back, float x, float y, float velx, float vely, int width, int height, int dirX, int dirY, ALLEGRO_BITMAP *image);
+void UpdateBackground(BackGround &back);
+void DrawBackground(BackGround &back);
 
 //INITIALISE
 Spaceship	player(width/2, height*4/5);
 Bullet		playerBullet(player.x_pos, player.y_pos,10,true);
 Bullet		enemyBullet(0,0,10,false);
 Enemy		arrEnem[NUM_COLUMNS][NUM_ROWS];												//array of objects
-
-
+BackGround BG;
+BackGround MG;
+BackGround FG;
 
 int main(void)
 {
@@ -58,9 +63,12 @@ int main(void)
 		return -1;
 	}
 	
+	ALLEGRO_BITMAP *bgImage = NULL;
+	ALLEGRO_BITMAP *mgImage = NULL;
+	ALLEGRO_BITMAP *fgImage = NULL;
+
 	//Allegro variables
 	ALLEGRO_DISPLAY *DISPLAY = NULL;
-
 	ALLEGRO_BITMAP *picHealth[7];
 	ALLEGRO_BITMAP *picShip = NULL;
 	ALLEGRO_BITMAP *picBullet = NULL;
@@ -74,7 +82,6 @@ int main(void)
 	ALLEGRO_SAMPLE *music = NULL;
 	ALLEGRO_SAMPLE *startGame = NULL;
 
-
 	//Allegro Module Init
 	al_init_image_addon();
 	al_set_new_window_position(400, 200);												//set pos of game window
@@ -87,8 +94,7 @@ int main(void)
 	al_install_audio();
 	al_init_acodec_addon();
 
-	al_reserve_samples(2);
-
+	al_reserve_samples(4);
 	blaster = al_load_sample("XWing-Laser.ogg");
 	explosion = al_load_sample("Blast.ogg");
 	startGame = al_load_sample("xwing.ogg");
@@ -113,12 +119,21 @@ int main(void)
 	picHealth[5] = al_load_bitmap("6.png");
 	picHealth[6] = al_load_bitmap("blank.png");
 
+	bgImage = al_load_bitmap("starBG.png");
+	mgImage = al_load_bitmap("starMG.jpg");
+	fgImage = al_load_bitmap("starFG.png");
+
 	for (int i = 0; i < 7; i++)
 		al_convert_mask_to_alpha(picHealth[i], al_map_rgb(0, 0, 0));
 
 	al_convert_mask_to_alpha(picShip,al_map_rgb(0,0,0));
 	al_convert_mask_to_alpha(picEnemy, al_map_rgb(0, 0, 0));
 	al_convert_mask_to_alpha(picBullet, al_map_rgb(0, 0, 0));
+	al_convert_mask_to_alpha(mgImage, al_map_rgb(0, 0, 0));
+
+	InitBackground(BG, 0, 0, 1, 0, 800, 600, -1, 1, bgImage);
+	InitBackground(MG, 0, 0, 3, 0, 2000, 768, -1, 1, mgImage);
+	InitBackground(FG, 0, 0, 5, 0, 800, 600, -1, 1, fgImage);
 
 	al_set_display_icon(DISPLAY, picShip);
 
@@ -162,7 +177,10 @@ int main(void)
 					playerBullet.status = 1;
 				}
 			}
-			
+
+			UpdateBackground(BG);
+			UpdateBackground(MG);
+			UpdateBackground(FG);
 			collideEnemy(score);
 			collidePlayer();
 			enemyShoot();
@@ -220,16 +238,18 @@ int main(void)
 
 			else if (gameState ==2)
 			{
+				DrawBackground(BG);
+				DrawBackground(MG);
+				DrawBackground(FG);
 				if (playerBullet.status == 1 && player.active)											//if bullet still active
 				{
 						playerBullet.Increment();															//bullet will move pos
 						al_draw_bitmap(picBullet, playerBullet.x_pos, playerBullet.y_pos, 0);				//redraw at new pos	
 						if (playerBullet.y_pos < 20)
 						{
-							playerBullet.status == 0;
+							playerBullet.status = 0;
 							updateBullet();
 						}
-							
 				}
 
 				if (enemyBullet.status == 1)
@@ -305,6 +325,8 @@ int main(void)
 	//Destroy allegro variables
 	al_destroy_sample(blaster);
 	al_destroy_sample(explosion);
+	al_destroy_sample(startGame);
+	al_destroy_sample(music);
 	al_destroy_event_queue(TestQueue);
 	al_destroy_timer(timer);
 	al_destroy_display(DISPLAY);
@@ -316,6 +338,11 @@ int main(void)
 	for (int i = 0; i < 7; i++)
 		al_destroy_bitmap(picHealth[i]);
 	
+
+	al_destroy_bitmap(bgImage);
+	al_destroy_bitmap(mgImage);
+	al_destroy_bitmap(fgImage);
+
 	return 0;
 }
 
@@ -514,4 +541,30 @@ bool reachEnd() //returns true if any enemy hits either of the sides
 		}
 	}
 	return false;
+}
+
+void InitBackground(BackGround &back, float x, float y, float velx, float vely, int width, int height, int dirX, int dirY, ALLEGRO_BITMAP *image)
+{
+	back.x = x;
+	back.y = y;
+	back.velX = velx;
+	back.velY = vely;
+	back.WIDTH = width;
+	back.HEIGHT = height;
+	back.dirX = dirX;
+	back.dirY = dirY;
+	back.image = image;
+}
+void UpdateBackground(BackGround &back)
+{
+	back.x += back.velX * back.dirX;
+	if (back.x + back.WIDTH <= 0)
+			back.x = 0;
+}
+void DrawBackground(BackGround &back)
+{
+	al_draw_bitmap(back.image, back.x, back.y, 0);
+	al_draw_bitmap(back.image, back.x + back.WIDTH, back.HEIGHT, 0);
+	al_draw_bitmap(back.image, back.x, back.HEIGHT, 0);		
+	al_draw_bitmap(back.image, back.x + back.WIDTH, back.y, 0);
 }

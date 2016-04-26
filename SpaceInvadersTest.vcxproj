@@ -77,6 +77,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BackGround.cpp" />
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="Spaceship.cpp" />
     <ClCompile Include="Bullet.cpp" />
@@ -84,6 +85,7 @@
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BackGround.h" />
     <ClInclude Include="Spaceship.h" />
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="Enemy.h" />
