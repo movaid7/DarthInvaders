@@ -365,7 +365,7 @@ int main(void)
 									
 				}
 
-				al_draw_textf(font25, al_map_rgb(255, 0, 0), 10, 0, 0, "Score: %i", score);								
+				al_draw_textf(font25, al_map_rgb(255, 0, 0), 10, 0, 0, "SCORE: %i", score);								
 			}
 
 			else if(gameState == 3)
@@ -375,7 +375,7 @@ int main(void)
 					al_play_sample(explosion, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 					player.health = 1;															// <--- bush method to make it only sound once :p
 				}
-				al_draw_textf(font50, al_map_rgb(255, 0, 0), width/2 -250, height/2 -200, 0, "Final Score: %i", score);
+				al_draw_textf(font50, al_map_rgb(255, 0, 0), width/2 -250, height/2 -200, 0, "FINAL SCORE: %i", score);
 			}
 			al_flip_display();																	//flip display to show all drawn objects
 			al_clear_to_color(al_map_rgb(0, 0, 0));												//background colour
