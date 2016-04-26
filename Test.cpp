@@ -14,6 +14,7 @@
 #include "Bullet.h"
 #include "Global.h"
 #include "BackGround.h"
+#include "Barrier.h"
 
 using namespace std;
 
@@ -24,7 +25,10 @@ int gameState = 1;																		//initial gamestate is menu
 extern int width;
 extern int height;
 int numAlive = NUM_COLUMNS*NUM_ROWS;
-	
+int Current_EnemyCount = NUM_COLUMNS*NUM_ROWS;
+int EnemyWaveCount = 0;
+int b = 0;
+
 //METHODS
 void setEnemy();
 void collideEnemy(int&);
@@ -36,6 +40,11 @@ bool reachEnd();
 void InitBackground(BackGround &back, float x, float y, float velx, float vely, int width, int height, int dirX, int dirY, ALLEGRO_BITMAP *image);
 void UpdateBackground(BackGround &back);
 void DrawBackground(BackGround &back);
+void CollideBarrier();
+void Reactivate_Enemies();
+void EnemyReachEnd();
+void BulletBarrierCollide();
+void InitialiseBarriers();
 
 
 //INITIALISE
@@ -43,6 +52,7 @@ Spaceship	player(width/2, height*4/5);
 Bullet		playerBullet(player.x_pos, player.y_pos,10,true);
 Bullet		enemyBullet(0,0,10,false);
 Enemy		arrEnem[NUM_COLUMNS][NUM_ROWS];												//array of objects
+Barrier Asteroid[3];
 
 BackGround BG;
 BackGround MG;
@@ -74,6 +84,8 @@ int main(void)
 	bool done = false;
 	bool redraw = true;
 
+	InitialiseBarriers();
+
 	MovingBackground MBG;
 
 	if(!al_init())
@@ -104,6 +116,8 @@ int main(void)
 	ALLEGRO_SAMPLE *explosion = NULL;
 	ALLEGRO_SAMPLE *music = NULL;
 	ALLEGRO_SAMPLE *startGame = NULL;
+	ALLEGRO_BITMAP *Barrier[5];
+	ALLEGRO_BITMAP *AsImage[3];
 
 	//Allegro Module Init
 	al_init_image_addon();
@@ -135,6 +149,21 @@ int main(void)
 	picEnemy = al_load_bitmap("enemy.png");
     Game = al_load_bitmap("Goodpic.png");
 	MENU = al_load_bitmap("star_sky.png");
+
+	Barrier[0] = al_load_bitmap("B4.png");
+	al_convert_mask_to_alpha(Barrier[0], al_map_rgb(255, 255, 255));
+	Barrier[1] = al_load_bitmap("B3.png");
+	al_convert_mask_to_alpha(Barrier[1], al_map_rgb(255, 255, 255));
+	Barrier[2] = al_load_bitmap("B2.png");
+	al_convert_mask_to_alpha(Barrier[2], al_map_rgb(255, 255, 255));
+	Barrier[3] = al_load_bitmap("B1.png");
+	al_convert_mask_to_alpha(Barrier[3], al_map_rgb(255, 255, 255));
+	Barrier[4] = al_load_bitmap("B0.png");
+	al_convert_mask_to_alpha(Barrier[4], al_map_rgb(255, 255, 255));
+
+	AsImage[0] = Barrier[4];
+	AsImage[1] = Barrier[4];
+	AsImage[2] = Barrier[4];
 	
 
 	picHealth[0] = al_load_bitmap("1.png");
@@ -208,7 +237,21 @@ int main(void)
 			UpdateBackground(MG);
 			UpdateBackground(FG);
 			collideEnemy(score);
+			if (Current_EnemyCount == 0)
+			{
+				EnemyWaveCount++;
+				Current_EnemyCount = NUM_COLUMNS*NUM_ROWS;
+				numAlive = NUM_COLUMNS*NUM_ROWS;
+				Reactivate_Enemies();
+				setEnemy();
+				if (player.health != 100)
+					player.health += 10;
+
+			}
+			CollideBarrier();
 			collidePlayer();
+			BulletBarrierCollide();
+			EnemyReachEnd();
 			enemyShoot();
 			moveDown(frameCount);
 			updateBullet();
@@ -296,6 +339,34 @@ int main(void)
 
 			else if (gameState ==2)
 			{
+
+
+				for (b = 0; b < 3; b++)
+				{
+					if (Asteroid[b].life_points != -1)
+					{
+						AsImage[b] = Barrier[Asteroid[b].life_points];
+					}
+
+					if (Asteroid[b].life_points == 5)
+						AsImage[b] = Barrier[4];
+					if (Asteroid[b].life_points == 4)
+						AsImage[b] = Barrier[3];
+					if (Asteroid[b].life_points == 3)
+						AsImage[b] = Barrier[2];
+					if (Asteroid[b].life_points == 2)
+						AsImage[b] = Barrier[1];
+					if (Asteroid[b].life_points == 1)
+						AsImage[b] = Barrier[0];
+				}
+
+
+				if (Asteroid[0].active == true)
+					al_draw_bitmap(AsImage[0], 50, 500, 0);
+				if (Asteroid[1].active == true)
+					al_draw_bitmap(AsImage[1], 435, 500, 0);
+				if (Asteroid[2].active == true)
+					al_draw_bitmap(AsImage[2], 820, 500, 0);
 
 				DrawBackground(BG);
 				DrawBackground(MG);
@@ -491,6 +562,7 @@ void collideEnemy(int &score)
 					{
 						playerBullet.status = 0;														//bullet set to not active
 						arrEnem[i][j].active = false;													//enemy set to not active
+						Current_EnemyCount--;
 						switch (j)
 						{
 						case 0:
@@ -629,4 +701,107 @@ void DrawBackground(BackGround &back)
 	al_draw_bitmap(back.image, back.x + back.WIDTH, back.HEIGHT, 0);
 	al_draw_bitmap(back.image, back.x, back.HEIGHT, 0);		
 	al_draw_bitmap(back.image, back.x + back.WIDTH, back.y, 0);
+}
+
+
+void InitialiseBarriers()
+{
+	Asteroid[0].SetBarrierBound(111, 10, 15);
+	Asteroid[0].SetBarrierpos(50, 500);
+	Asteroid[0].setLife(5);
+	Asteroid[0].active = true;
+
+	Asteroid[1].SetBarrierBound(111, 10, 15);
+	Asteroid[1].SetBarrierpos(435, 500);
+	Asteroid[1].setLife(5);
+	Asteroid[1].active = true;
+
+	Asteroid[2].SetBarrierBound(111, 10, 15);
+	Asteroid[2].SetBarrierpos(820, 500);
+	Asteroid[2].setLife(5);
+	Asteroid[2].active = true;
+}
+
+void Reactivate_Enemies()
+{
+	for (int i = 0; i < NUM_COLUMNS; i++)
+	{
+		for (int j = 0; j < NUM_ROWS; j++)
+		{
+			arrEnem[i][j].active = true;
+		}
+	}
+}
+
+
+
+void CollideBarrier()
+{
+	int i = 0;
+	for (; i<3; i++)
+
+
+		if (Asteroid[i].active == true)
+		{
+			if (enemyBullet.status == 1)
+			{
+				if (enemyBullet.x_pos >(Asteroid[i].x_pos - Asteroid[i].Bleft) && enemyBullet.x_pos<(Asteroid[i].x_pos + Asteroid[i].Bright)
+					&& enemyBullet.y_pos>(Asteroid[i].y_pos - Asteroid[i].BHeight) && enemyBullet.y_pos < (Asteroid[i].y_pos + Asteroid[i].BHeight))
+				{
+					if (Asteroid[i].life_points != 0)
+					{
+						Asteroid[i].life_points--;
+						if (Asteroid[i].life_points == 0)
+						{
+							Asteroid[i].active = false;
+						}
+					}
+
+					enemyBullet.status = 0;
+
+				}
+			}
+		}
+}
+
+
+void BulletBarrierCollide()
+{
+	int i = 0;
+	for (; i < 3; i++)
+	{
+
+		if (Asteroid[i].active == true)
+		{
+			if (playerBullet.status == 1)
+			{
+				if (playerBullet.x_pos >(Asteroid[i].x_pos - Asteroid[i].Bleft) && playerBullet.x_pos<(Asteroid[i].x_pos + Asteroid[i].Bright)
+					&& playerBullet.y_pos>(Asteroid[i].y_pos - Asteroid[i].BHeight) && playerBullet.y_pos < (Asteroid[i].y_pos + Asteroid[i].BHeight))
+				{
+
+					playerBullet.status = 0;
+
+				}
+			}
+		}
+	}
+
+}
+
+void EnemyReachEnd()
+{
+	int i = 0;
+	int j = 0;
+
+	for (i = 0; i < NUM_COLUMNS; i++)
+		for (j = 0; j < NUM_ROWS; j++)
+		{
+			if (arrEnem[i][j].active == true)
+			{
+				if (arrEnem[i][j].y_pos > Asteroid[0].y_pos - Asteroid[0].BHeight)
+				{
+					gameState = 3;
+				}
+			}
+		}
 }
