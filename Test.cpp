@@ -65,6 +65,7 @@ int main(void)
 	ALLEGRO_BITMAP *picShip = NULL;
 	ALLEGRO_BITMAP *picBullet = NULL;
 	ALLEGRO_BITMAP *picEnemy = NULL;
+	ALLEGRO
 	ALLEGRO_EVENT_QUEUE *TestQueue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
 	ALLEGRO_FONT *font25 = NULL;
@@ -211,10 +212,11 @@ int main(void)
 			redraw = false;
 			if (gameState == 1)
 			{
-				//MENU COMES HERE
-
+				
+				
 				// When start game is selected: 
 				al_play_sample(startGame, 1, 0, 2.2, ALLEGRO_PLAYMODE_ONCE, NULL);
+				
 				gameState = 2;
 			}
 
