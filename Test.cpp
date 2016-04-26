@@ -37,14 +37,31 @@ void InitBackground(BackGround &back, float x, float y, float velx, float vely, 
 void UpdateBackground(BackGround &back);
 void DrawBackground(BackGround &back);
 
+
 //INITIALISE
 Spaceship	player(width/2, height*4/5);
 Bullet		playerBullet(player.x_pos, player.y_pos,10,true);
 Bullet		enemyBullet(0,0,10,false);
 Enemy		arrEnem[NUM_COLUMNS][NUM_ROWS];												//array of objects
+
 BackGround BG;
 BackGround MG;
 BackGround FG;
+
+
+struct MovingBackground
+{
+	float x;
+	float y;
+	float velX;
+	float velY;
+	int dirX;
+	int dirY;
+	int width;
+	int height;
+	ALLEGRO_BITMAP *BG;
+};
+
 
 int main(void)
 {
@@ -56,6 +73,8 @@ int main(void)
 	const int FPS = 60;
 	bool done = false;
 	bool redraw = true;
+
+	MovingBackground MBG;
 
 	if(!al_init())
 	{
@@ -73,6 +92,10 @@ int main(void)
 	ALLEGRO_BITMAP *picShip = NULL;
 	ALLEGRO_BITMAP *picBullet = NULL;
 	ALLEGRO_BITMAP *picEnemy = NULL;
+	ALLEGRO_BITMAP *Game = NULL;
+	ALLEGRO_BITMAP *MENU = NULL;
+	
+	
 	ALLEGRO_EVENT_QUEUE *TestQueue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
 	ALLEGRO_FONT *font25 = NULL;
@@ -110,6 +133,9 @@ int main(void)
 	picBullet=al_load_bitmap("Lazer.png");
 	picShip =al_load_bitmap("player1.png");
 	picEnemy = al_load_bitmap("enemy.png");
+    Game = al_load_bitmap("Goodpic.png");
+	MENU = al_load_bitmap("star_sky.png");
+	
 
 	picHealth[0] = al_load_bitmap("1.png");
 	picHealth[1] = al_load_bitmap("2.png");
@@ -147,8 +173,8 @@ int main(void)
 	al_start_timer(timer);
 	int score = 0;
 	int frameCount = 0;
-	font25 = al_load_font("Starjedi.ttf", 27, 0);
-	font50 = al_load_font("Starjedi.ttf", 50, 0);
+	font25 = al_load_font("Legacy.ttf", 38, 0);
+	font50 = al_load_font("STARWARS.TTF", 55, 0);
 	al_play_sample(music, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP, NULL);
 	
 	while (!done)
@@ -224,23 +250,57 @@ int main(void)
 			}
 		}
 
+		if (gameState == 1)
+		{
+			if (GETKEY.type == ALLEGRO_EVENT_KEY_DOWN)
+			{
+				switch (GETKEY.keyboard.keycode)
+				{
+				case ALLEGRO_KEY_ESCAPE:
+					gameState = 3;
+					break;
+				case ALLEGRO_KEY_SPACE:
+					gameState = 2;
+					break;
+
+				}
+			}
+		}
+
+		if (gameState == 2)
+		{
+			if (GETKEY.type == ALLEGRO_EVENT_KEY_DOWN)
+			{
+				switch (GETKEY.keyboard.keycode)
+				{
+				case ALLEGRO_KEY_ESCAPE:
+					gameState = 3;
+					break;
+				}
+			}
+		}
+
 		if (redraw && al_is_event_queue_empty(TestQueue)) //rendering
 		{
 			redraw = false;
 			if (gameState == 1)
 			{
-				//MENU COMES HERE
-
-				// When start game is selected: 
-				al_play_sample(startGame, 1, 0, 2.2, ALLEGRO_PLAYMODE_ONCE, NULL);
-				gameState = 2;
-			}
+				al_draw_bitmap(MENU, 0, 0, 0);
+				
+				al_draw_text(font25, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMSST  PRESENTS");
+				al_draw_text(font50, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH   INVADERS");
+				al_draw_text(font25, al_map_rgb(255, 40, 78), (width / 2), (height) - 350, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
+				al_draw_text(font25, al_map_rgb(255, 40, 78), (width / 2), (height -300) , ALLEGRO_ALIGN_CENTRE, "PRESS ESC ESCAPE");
+			
+				}
 
 			else if (gameState ==2)
 			{
+
 				DrawBackground(BG);
 				DrawBackground(MG);
 				DrawBackground(FG);
+
 				if (playerBullet.status == 1 && player.active)											//if bullet still active
 				{
 						playerBullet.Increment();															//bullet will move pos
@@ -324,6 +384,9 @@ int main(void)
 
 	//Destroy allegro variables
 	al_destroy_sample(blaster);
+	al_destroy_bitmap(Game);
+	
+	al_destroy_bitmap(MENU);
 	al_destroy_sample(explosion);
 	al_destroy_sample(startGame);
 	al_destroy_sample(music);
@@ -474,7 +537,6 @@ void moveDown(int &frameCount)
 	else if (numAlive == 0)
 	{
 		gameState = 3;
-	
 	}
 
 	if (frameCount % interval == 0)

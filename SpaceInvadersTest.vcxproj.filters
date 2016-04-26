@@ -18,9 +18,6 @@
     <ClCompile Include="Test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Enemy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Bullet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -30,8 +27,13 @@
     <ClCompile Include="Global.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="BackGround.cpp">
       <Filter>Source Files</Filter>
+=======
+    <ClCompile Include="Enemy.cpp">
+      <Filter>Resource Files</Filter>
+>>>>>>> f5ae0e3cac578ccd6caab1a05de932db256ae7d9
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
