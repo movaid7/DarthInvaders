@@ -339,7 +339,9 @@ int main(void)
 
 			else if (gameState ==2)
 			{
-
+				DrawBackground(BG);
+				DrawBackground(MG);
+				DrawBackground(FG);
 
 				for (b = 0; b < 3; b++)
 				{
@@ -368,9 +370,7 @@ int main(void)
 				if (Asteroid[2].active == true)
 					al_draw_bitmap(AsImage[2], 820, 500, 0);
 
-				DrawBackground(BG);
-				DrawBackground(MG);
-				DrawBackground(FG);
+
 
 				if (playerBullet.status == 1 && player.active)											//if bullet still active
 				{
