@@ -58,7 +58,7 @@ BackGround BG;
 BackGround MG;
 BackGround FG;
 
-
+// \/ MOVE TO CLASS \/
 struct MovingBackground
 {
 	float x;
@@ -243,6 +243,8 @@ int main(void)
 			UpdateBackground(MG);
 			UpdateBackground(FG);
 			collideEnemy(score);
+
+			// Make into method \/
 			if (Current_EnemyCount == 0)
 			{
 				EnemyWaveCount++;
@@ -312,8 +314,7 @@ int main(void)
 				al_draw_text(font25, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMMST  PRESENTS");
 				al_draw_text(font50, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH   INVADERS");
 				al_draw_text(font25, al_map_rgb(255, 40, 78), (width / 2), (height) - 350, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
-				al_draw_text(font25, al_map_rgb(255, 40, 78), (width / 2), (height -300) , ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO ESCAPE");
-			
+				al_draw_text(font25, al_map_rgb(255, 40, 78), (width / 2), (height -300) , ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
 				}
 
 			else if (gameState ==2)
@@ -322,6 +323,7 @@ int main(void)
 				DrawBackground(MG);
 				DrawBackground(FG);
 
+				// Make into method \/
 				for (b = 0; b < 3; b++)
 				{
 					if (Asteroid[b].life_points != -1)
@@ -456,7 +458,7 @@ int main(void)
 	for (int i = 0; i < 7; i++)
 		al_destroy_bitmap(picHealth[i]);
 	
-
+	// ADD YOUR BITMAPS ETC TO al_destroy !!
 
 	return 0;
 }
