@@ -226,11 +226,17 @@ int main(void)
 				player.MoveSpaceshipRight();
 			if (keys[SPACE])														//Spacebar will fire
 			{
-				if (playerBullet.status ==0)
+				if (gameState == 1)
+					gameState = 2;
+				else if(gameState ==2)
 				{
-					al_play_sample(blaster, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-					playerBullet.status = 1;
+					if (playerBullet.status ==0)
+					{
+						al_play_sample(blaster, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+						playerBullet.status = 1;
+					}
 				}
+				
 			}
 
 			UpdateBackground(BG);
@@ -263,7 +269,10 @@ int main(void)
 			switch(GETKEY.keyboard.keycode)
 			{
 			case ALLEGRO_KEY_ESCAPE:													//esc to end the game
-				done = true;
+				if (gameState == 2)
+					gameState = 3;
+				else
+					done = true;
 				break;
 			case ALLEGRO_KEY_RIGHT:
 				keys[RIGHT] = true;
@@ -293,36 +302,6 @@ int main(void)
 			}
 		}
 
-		if (gameState == 1)
-		{
-			if (GETKEY.type == ALLEGRO_EVENT_KEY_DOWN)
-			{
-				switch (GETKEY.keyboard.keycode)
-				{
-				case ALLEGRO_KEY_ESCAPE:
-					gameState = 3;
-					break;
-				case ALLEGRO_KEY_SPACE:
-					gameState = 2;
-					break;
-
-				}
-			}
-		}
-
-		if (gameState == 2)
-		{
-			if (GETKEY.type == ALLEGRO_EVENT_KEY_DOWN)
-			{
-				switch (GETKEY.keyboard.keycode)
-				{
-				case ALLEGRO_KEY_ESCAPE:
-					gameState = 3;
-					break;
-				}
-			}
-		}
-
 		if (redraw && al_is_event_queue_empty(TestQueue)) //rendering
 		{
 			redraw = false;
@@ -330,10 +309,10 @@ int main(void)
 			{
 				al_draw_bitmap(MENU, 0, 0, 0);
 				
-				al_draw_text(font25, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMSST  PRESENTS");
+				al_draw_text(font25, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMMST  PRESENTS");
 				al_draw_text(font50, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH   INVADERS");
 				al_draw_text(font25, al_map_rgb(255, 40, 78), (width / 2), (height) - 350, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
-				al_draw_text(font25, al_map_rgb(255, 40, 78), (width / 2), (height -300) , ALLEGRO_ALIGN_CENTRE, "PRESS ESC ESCAPE");
+				al_draw_text(font25, al_map_rgb(255, 40, 78), (width / 2), (height -300) , ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO ESCAPE");
 			
 				}
 
@@ -455,27 +434,29 @@ int main(void)
 
 	//Destroy allegro variables
 	al_destroy_sample(blaster);
-	al_destroy_bitmap(Game);
-	
-	al_destroy_bitmap(MENU);
 	al_destroy_sample(explosion);
 	al_destroy_sample(startGame);
 	al_destroy_sample(music);
+
 	al_destroy_event_queue(TestQueue);
 	al_destroy_timer(timer);
 	al_destroy_display(DISPLAY);
+
+	al_destroy_font(font25);
+	al_destroy_font(font50);
+
+	al_destroy_bitmap(Game);
+	al_destroy_bitmap(MENU);
 	al_destroy_bitmap(picEnemy);
 	al_destroy_bitmap(picShip);
 	al_destroy_bitmap(picBullet);
-	al_destroy_font(font25);
-	al_destroy_font(font50);
+	al_destroy_bitmap(bgImage);
+	al_destroy_bitmap(mgImage);
+	al_destroy_bitmap(fgImage);
 	for (int i = 0; i < 7; i++)
 		al_destroy_bitmap(picHealth[i]);
 	
 
-	al_destroy_bitmap(bgImage);
-	al_destroy_bitmap(mgImage);
-	al_destroy_bitmap(fgImage);
 
 	return 0;
 }
@@ -492,7 +473,7 @@ void collidePlayer()
 			enemyBullet.status = 0;																//bullet set to not active
 			player.health -= 10;
 		}
-}
+	}
 
 	if (player.health == 0)
 	{
@@ -689,12 +670,14 @@ void InitBackground(BackGround &back, float x, float y, float velx, float vely, 
 	back.dirY = dirY;
 	back.image = image;
 }
+
 void UpdateBackground(BackGround &back)
 {
 	back.x += back.velX * back.dirX;
 	if (back.x + back.WIDTH <= 0)
 			back.x = 0;
 }
+
 void DrawBackground(BackGround &back)
 {
 	al_draw_bitmap(back.image, back.x, back.y, 0);
@@ -733,68 +716,49 @@ void Reactivate_Enemies()
 	}
 }
 
-
-
 void CollideBarrier()
 {
-	int i = 0;
-	for (; i<3; i++)
-
-
-		if (Asteroid[i].active == true)
-		{
-			if (enemyBullet.status == 1)
-			{
-				if (enemyBullet.x_pos >(Asteroid[i].x_pos - Asteroid[i].Bleft) && enemyBullet.x_pos<(Asteroid[i].x_pos + Asteroid[i].Bright)
-					&& enemyBullet.y_pos>(Asteroid[i].y_pos - Asteroid[i].BHeight) && enemyBullet.y_pos < (Asteroid[i].y_pos + Asteroid[i].BHeight))
-				{
-					if (Asteroid[i].life_points != 0)
-					{
-						Asteroid[i].life_points--;
-						if (Asteroid[i].life_points == 0)
-						{
-							Asteroid[i].active = false;
-						}
-					}
-
-					enemyBullet.status = 0;
-
-				}
-			}
-		}
-}
-
-
-void BulletBarrierCollide()
-{
-	int i = 0;
-	for (; i < 3; i++)
+	for (int i = 0; i < 3; i++)
 	{
-
-		if (Asteroid[i].active == true)
+		if (Asteroid[i].active && enemyBullet.status == 1)
 		{
-			if (playerBullet.status == 1)
+			if (enemyBullet.x_pos >(Asteroid[i].x_pos - Asteroid[i].Bleft) && enemyBullet.x_pos<(Asteroid[i].x_pos + Asteroid[i].Bright)
+			&& enemyBullet.y_pos>(Asteroid[i].y_pos - Asteroid[i].BHeight) && enemyBullet.y_pos < (Asteroid[i].y_pos + Asteroid[i].BHeight))
 			{
-				if (playerBullet.x_pos >(Asteroid[i].x_pos - Asteroid[i].Bleft) && playerBullet.x_pos<(Asteroid[i].x_pos + Asteroid[i].Bright)
-					&& playerBullet.y_pos>(Asteroid[i].y_pos - Asteroid[i].BHeight) && playerBullet.y_pos < (Asteroid[i].y_pos + Asteroid[i].BHeight))
+				if (Asteroid[i].life_points != 0)
 				{
-
-					playerBullet.status = 0;
-
+					Asteroid[i].life_points--;
+					if (Asteroid[i].life_points == 0)
+					{
+						Asteroid[i].active = false;
+					}
 				}
+				enemyBullet.status = 0;
 			}
 		}
 	}
+}
 
+void BulletBarrierCollide()
+{
+	for (int i=0; i < 3; i++)
+	{
+		if (Asteroid[i].active && playerBullet.status == 1)
+		{
+			if (playerBullet.x_pos >(Asteroid[i].x_pos - Asteroid[i].Bleft) && playerBullet.x_pos<(Asteroid[i].x_pos + Asteroid[i].Bright)
+				&& playerBullet.y_pos>(Asteroid[i].y_pos - Asteroid[i].BHeight) && playerBullet.y_pos < (Asteroid[i].y_pos + Asteroid[i].BHeight + 40))
+			{
+				playerBullet.status = 0;
+			}
+		}
+	}
 }
 
 void EnemyReachEnd()
 {
-	int i = 0;
-	int j = 0;
-
-	for (i = 0; i < NUM_COLUMNS; i++)
-		for (j = 0; j < NUM_ROWS; j++)
+	for (int i = 0; i < NUM_COLUMNS; i++)
+	{
+		for (int j = 0; j < NUM_ROWS; j++)
 		{
 			if (arrEnem[i][j].active == true)
 			{
@@ -804,4 +768,5 @@ void EnemyReachEnd()
 				}
 			}
 		}
+	}		
 }
