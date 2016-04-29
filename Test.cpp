@@ -151,20 +151,17 @@ int main(void)
 	MENU = al_load_bitmap("star_sky.png");
 
 	Barrier[0] = al_load_bitmap("B4.png");
-	al_convert_mask_to_alpha(Barrier[0], al_map_rgb(255, 255, 255));
 	Barrier[1] = al_load_bitmap("B3.png");
-	al_convert_mask_to_alpha(Barrier[1], al_map_rgb(255, 255, 255));
 	Barrier[2] = al_load_bitmap("B2.png");
-	al_convert_mask_to_alpha(Barrier[2], al_map_rgb(255, 255, 255));
 	Barrier[3] = al_load_bitmap("B1.png");
-	al_convert_mask_to_alpha(Barrier[3], al_map_rgb(255, 255, 255));
 	Barrier[4] = al_load_bitmap("B0.png");
-	al_convert_mask_to_alpha(Barrier[4], al_map_rgb(255, 255, 255));
+
+	for (int i = 0; i < 5; i++)
+		al_convert_mask_to_alpha(Barrier[i], al_map_rgb(255, 255, 255));
 
 	AsImage[0] = Barrier[4];
 	AsImage[1] = Barrier[4];
 	AsImage[2] = Barrier[4];
-	
 
 	picHealth[0] = al_load_bitmap("1.png");
 	picHealth[1] = al_load_bitmap("2.png");
@@ -254,10 +251,21 @@ int main(void)
 				Reactivate_Barriers(); 
 				setEnemy();
 
-				if (player.health != 100)
+				switch (player.health)
+				{
+				case 50:
 					player.health += 10;
-
+				case 40:
+					player.health += 20;
+				case 30:
+					player.health += 20;
+				case 20:
+					player.health += 20;
+				case 10:
+					player.health += 20;
+				}
 			}
+
 			CollideBarrier();
 			collidePlayer();
 			BulletBarrierCollide();
