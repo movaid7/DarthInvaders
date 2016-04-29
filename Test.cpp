@@ -46,7 +46,7 @@ void EnemyReachEnd();
 void BulletBarrierCollide();
 void InitialiseBarriers();
 void Reactivate_Barriers();
-
+void updateEnemyCount();
 //INITIALISE
 Spaceship	player(width/2, height*4/5);
 Bullet		playerBullet(player.x_pos, player.y_pos,10,true);
@@ -242,6 +242,7 @@ int main(void)
 			collideEnemy(score);
 
 			// Make into method \/
+
 			if (Current_EnemyCount == 0)
 			{
 				EnemyWaveCount++;
@@ -266,6 +267,7 @@ int main(void)
 				}
 			}
 
+			updateEnemyCount();
 			CollideBarrier();
 			collidePlayer();
 			BulletBarrierCollide();
@@ -766,6 +768,35 @@ void BulletBarrierCollide()
 	}
 }
 
+
+
+
+
+
+void updateEnemyCount()
+{
+
+	if (Current_EnemyCount == 0)
+	{
+		EnemyWaveCount++;
+		Current_EnemyCount = NUM_COLUMNS*NUM_ROWS;
+		numAlive = NUM_COLUMNS*NUM_ROWS;
+		Reactivate_Enemies();
+		Reactivate_Barriers();
+		setEnemy();
+
+		if (player.health != 100)
+			player.health += 10;
+
+	}
+
+
+
+
+}
+
+
+
 void EnemyReachEnd()
 {
 	for (int i = 0; i < NUM_COLUMNS; i++)
@@ -792,3 +823,4 @@ void Reactivate_Barriers()
 	}
 
 }
+
