@@ -240,33 +240,6 @@ int main(void)
 			UpdateBackground(MG);
 			UpdateBackground(FG);
 			collideEnemy(score);
-
-			// Make into method \/
-
-			if (Current_EnemyCount == 0)
-			{
-				EnemyWaveCount++;
-				Current_EnemyCount = NUM_COLUMNS*NUM_ROWS;
-				numAlive = NUM_COLUMNS*NUM_ROWS;
-				Reactivate_Enemies();
-				Reactivate_Barriers(); 
-				setEnemy();
-
-				switch (player.health)
-				{
-				case 50:
-					player.health += 10;
-				case 40:
-					player.health += 20;
-				case 30:
-					player.health += 20;
-				case 20:
-					player.health += 20;
-				case 10:
-					player.health += 20;
-				}
-			}
-
 			updateEnemyCount();
 			CollideBarrier();
 			collidePlayer();
@@ -785,14 +758,25 @@ void updateEnemyCount()
 		Reactivate_Barriers();
 		setEnemy();
 
-		if (player.health != 100)
+		switch (player.health)
+		{
+		case 50:
 			player.health += 10;
-
+			break;
+		case 40:
+			player.health += 20;
+			break;
+		case 30:
+			player.health += 20;
+			break;
+		case 20:
+			player.health += 20;
+			break;
+		case 10:
+			player.health += 20;
+			break;
+		}
 	}
-
-
-
-
 }
 
 
