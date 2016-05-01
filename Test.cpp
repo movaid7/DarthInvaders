@@ -8,6 +8,8 @@
 #include <allegro5\allegro_ttf.h>
 #include <allegro5\allegro_audio.h>
 #include <allegro5\allegro_acodec.h>
+#include <string>
+#include <string.h>
 
 #include "Enemy.h"
 #include "Spaceship.h"
@@ -27,7 +29,11 @@ extern int height;
 int numAlive = NUM_COLUMNS*NUM_ROWS;
 int Current_EnemyCount = NUM_COLUMNS*NUM_ROWS;
 int EnemyWaveCount = 0;
-int b = 0;
+int input=0;
+char* mistring;
+
+bool isHighscore = false;																//READ IN LOWEST HIGHSCORE FIRST. USE THIS BOOL TO CHECK USER FINAL SCORE VS LOWEST HIGHSCORE
+int lowScore = 0;
 
 //METHODS
 void setEnemy();
@@ -47,12 +53,13 @@ void BulletBarrierCollide();
 void InitialiseBarriers();
 void Reactivate_Barriers();
 void updateEnemyCount();
+
 //INITIALISE
 Spaceship	player(width/2, height*4/5);
 Bullet		playerBullet(player.x_pos, player.y_pos,10,true);
 Bullet		enemyBullet(0,0,10,false);
 Enemy		arrEnem[NUM_COLUMNS][NUM_ROWS];												//array of objects
-Barrier Asteroid[3];
+Barrier		Asteroid[3];
 
 BackGround BG;
 BackGround MG;
@@ -112,12 +119,14 @@ int main(void)
 	ALLEGRO_TIMER *timer = NULL;
 	ALLEGRO_FONT *font25 = NULL;
 	ALLEGRO_FONT *font50 = NULL;
+	ALLEGRO_FONT *fontName = NULL;
 	ALLEGRO_SAMPLE *blaster = NULL;
 	ALLEGRO_SAMPLE *explosion = NULL;
 	ALLEGRO_SAMPLE *music = NULL;
 	ALLEGRO_SAMPLE *startGame = NULL;
 	ALLEGRO_BITMAP *Barrier[5];
 	ALLEGRO_BITMAP *AsImage[3];
+	ALLEGRO_USTR* str = al_ustr_new("ENTER NAME: ");
 
 	//Allegro Module Init
 	al_init_image_addon();
@@ -199,8 +208,11 @@ int main(void)
 	al_start_timer(timer);
 	int score = 0;
 	int frameCount = 0;
+	int pos = (int)al_ustr_size(str);
 	font25 = al_load_font("Legacy.ttf", 38, 0);
 	font50 = al_load_font("STARWARS.TTF", 55, 0);
+	fontName = al_load_font("Legacy.ttf", 38, 0);
+	
 	al_play_sample(music, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP, NULL);
 	
 	while (!done)
@@ -235,19 +247,21 @@ int main(void)
 				}
 				
 			}
-
-			UpdateBackground(BG);
-			UpdateBackground(MG);
-			UpdateBackground(FG);
-			collideEnemy(score);
-			updateEnemyCount();
-			CollideBarrier();
-			collidePlayer();
-			BulletBarrierCollide();
-			EnemyReachEnd();
-			enemyShoot();
-			moveDown(frameCount);
-			updateBullet();
+			if (gameState == 2)
+			{
+				UpdateBackground(BG);
+				UpdateBackground(MG);
+				UpdateBackground(FG);
+				collideEnemy(score);
+				updateEnemyCount();
+				CollideBarrier();
+				collidePlayer();
+				BulletBarrierCollide();
+				EnemyReachEnd();
+				enemyShoot();
+				moveDown(frameCount);
+				updateBullet();
+			}
 		}
 
 		
@@ -270,10 +284,19 @@ int main(void)
 			case ALLEGRO_KEY_SPACE:
 				keys[SPACE]=true;
 				break;
+			case ALLEGRO_KEY_BACKSPACE:											//backspace for name input
+				if (gameState == 3)
+					if (al_ustr_prev(str, &pos))
+						al_ustr_truncate(str, pos);
+				break;
+			case ALLEGRO_KEY_ENTER:												//will display leaderboard once they press enter.
+				if (gameState == 3)
+					gameState = 4;
+					break;
 			}
 		}
 
-		else if (GETKEY.type == ALLEGRO_EVENT_KEY_UP)
+		if (GETKEY.type == ALLEGRO_EVENT_KEY_UP)
 		{
 			switch (GETKEY.keyboard.keycode)
 			{
@@ -289,10 +312,24 @@ int main(void)
 			}
 		}
 
+		else if (GETKEY.type == ALLEGRO_EVENT_KEY_CHAR && gameState == 3 && isHighscore)
+		{
+			if (GETKEY.keyboard.unichar >= 32)
+			{
+				if (input == 0)
+				{
+					al_ustr_remove_range(str, 0, al_ustr_length(str));							//clears 'ENTER NAME: '
+					pos = 0;
+					input = 1;
+				}
+				pos += al_ustr_append_chr(str, GETKEY.keyboard.unichar);
+			}	
+		}
+
 		if (redraw && al_is_event_queue_empty(TestQueue)) //rendering
 		{
 			redraw = false;
-			if (gameState == 1)
+			if (gameState == 1)		//menu
 			{
 				al_draw_bitmap(MENU, 0, 0, 0);
 				
@@ -302,14 +339,14 @@ int main(void)
 				al_draw_text(font25, al_map_rgb(255, 40, 78), (width / 2), (height -300) , ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
 				}
 
-			else if (gameState ==2)
+			else if (gameState == 2)	//main game
 			{
 				DrawBackground(BG);
 				DrawBackground(MG);
 				DrawBackground(FG);
 
 				// Make into method \/
-				for (b = 0; b < 3; b++)
+				for (int b = 0; b < 3; b++)
 				{
 					if (Asteroid[b].life_points != -1)
 					{
@@ -338,7 +375,7 @@ int main(void)
 
 
 
-				if (playerBullet.status == 1 && player.active)											//if bullet still active
+				if (playerBullet.status == 1 && player.active)												//if bullet still active
 				{
 						playerBullet.Increment();															//bullet will move pos
 						al_draw_bitmap(picBullet, playerBullet.x_pos, playerBullet.y_pos, 0);				//redraw at new pos	
@@ -405,15 +442,31 @@ int main(void)
 				al_draw_textf(font25, al_map_rgb(255, 0, 0), 10, 0, 0, "SCORE: %i", score);								
 			}
 
-			else if(gameState == 3)
+			else if(gameState == 3) //end game
 			{
 				if (player.health == 0)
 				{
 					al_play_sample(explosion, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 					player.health = 1;															// <--- bush method to make it only sound once :p
 				}
-				al_draw_textf(font50, al_map_rgb(255, 0, 0), width/2 -250, height/2 -200, 0, "FINAL SCORE: %i", score);
+
+				//check to determine if he made a highscore
+				if(score>lowScore)
+					isHighscore = true; 
+
+				mistring = al_cstr_dup(str);
+				al_draw_textf(font50, al_map_rgb(255, 0, 0), width / 2 - 250, height / 2 - 200, 0, "FINAL SCORE: %i", score);
+
+				if(isHighscore)
+					al_draw_text(fontName, al_map_rgb_f(1, 1, 1), width / 2 - 250, height / 2 - 100, ALLEGRO_ALIGN_LEFT, mistring);
 			}
+
+			else if (gameState == 4)	//highscores
+			{
+				string name = mistring;
+				//if (isHighscore) -> write name & score to textfile & then SHOW LEADERBOARD here || if not highscore. just show leaderboard
+			}
+
 			al_flip_display();																	//flip display to show all drawn objects
 			al_clear_to_color(al_map_rgb(0, 0, 0));												//background colour
 		 }
@@ -733,7 +786,7 @@ void BulletBarrierCollide()
 		if (Asteroid[i].active && playerBullet.status == 1)
 		{
 			if (playerBullet.x_pos >(Asteroid[i].x_pos - Asteroid[i].Bleft) && playerBullet.x_pos<(Asteroid[i].x_pos + Asteroid[i].Bright)
-				&& playerBullet.y_pos>(Asteroid[i].y_pos - Asteroid[i].BHeight) && playerBullet.y_pos < (Asteroid[i].y_pos + Asteroid[i].BHeight + 40))
+				&& playerBullet.y_pos>(Asteroid[i].y_pos - Asteroid[i].BHeight) && playerBullet.y_pos < (Asteroid[i].y_pos + Asteroid[i].BHeight + 17))
 			{
 				playerBullet.status = 0;
 			}
@@ -800,7 +853,7 @@ void EnemyReachEnd()
 
 void Reactivate_Barriers()
 {
-	for (b = 0; b < 3; b++)
+	for (int b = 0; b < 3; b++)
 	{
 		Asteroid[b].life_points = 5;
 		Asteroid[b].active = true;
