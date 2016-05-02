@@ -22,3 +22,9 @@ Barrier::Barrier()
 	 Bleft = 0;
 	 active = true;
 }
+
+void Barrier::drawIfActive(float x, float y)
+{
+	if (this->active == true)
+		al_draw_bitmap(CurrentImage, x, y, 0);
+}

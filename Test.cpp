@@ -54,6 +54,7 @@ void BulletBarrierCollide();
 void InitBarriers();
 void Reactivate_Barriers();
 void updateEnemyCount();
+void UpdateBarrierImages(ALLEGRO_BITMAP *SpaceBarrier[]);
 
 //INITIALISE
 Spaceship	player(width/2, height*4/5);
@@ -115,8 +116,7 @@ int main(void)
 	ALLEGRO_SAMPLE *explosion = NULL;
 	ALLEGRO_SAMPLE *music = NULL;
 	ALLEGRO_SAMPLE *startGame = NULL;
-	ALLEGRO_BITMAP *Barrier[5];
-	ALLEGRO_BITMAP *AsImage[3];
+	ALLEGRO_BITMAP *SpaceBarrier[5];
 	ALLEGRO_USTR* str = al_ustr_new("ENTER NAME: ");
 
 	//Allegro Module Init
@@ -151,18 +151,14 @@ int main(void)
     Game = al_load_bitmap("Goodpic.png");
 	MENU = al_load_bitmap("starBG.png");
 
-	Barrier[0] = al_load_bitmap("B4.png");
-	Barrier[1] = al_load_bitmap("B3.png");
-	Barrier[2] = al_load_bitmap("B2.png");
-	Barrier[3] = al_load_bitmap("B1.png");
-	Barrier[4] = al_load_bitmap("B0.png");
 	for (int i = 0; i < 5; i++)
-		al_convert_mask_to_alpha(Barrier[i], al_map_rgb(255, 255, 255));
+		SpaceBarrier[i] = al_load_bitmap(redBarrier[0].Images[i]);
 
-	AsImage[0] = Barrier[4];
-	AsImage[1] = Barrier[4];
-	AsImage[2] = Barrier[4];
+	for (int i = 0; i < 5; i++)
+		al_convert_mask_to_alpha(SpaceBarrier[i], al_map_rgb(255, 255, 255));
 
+	for (int i = 0; i < 3; i++)
+		redBarrier[i].CurrentImage = SpaceBarrier[4];
 
 	// \/ Remove \/
 	MenuAnim[0] = al_load_bitmap("S1.png");
@@ -387,32 +383,12 @@ int main(void)
 				DrawBackground(FG);
 
 				// Make into method \/
-				for (int b = 0; b < 3; b++)
-				{
-					if (redBarrier[b].life_points != -1)
-					{
-						AsImage[b] = Barrier[redBarrier[b].life_points];
-					}
+				UpdateBarrierImages(SpaceBarrier);
 
-					if (redBarrier[b].life_points == 5)
-						AsImage[b] = Barrier[4];
-					if (redBarrier[b].life_points == 4)
-						AsImage[b] = Barrier[3];
-					if (redBarrier[b].life_points == 3)
-						AsImage[b] = Barrier[2];
-					if (redBarrier[b].life_points == 2)
-						AsImage[b] = Barrier[1];
-					if (redBarrier[b].life_points == 1)
-						AsImage[b] = Barrier[0];
-				}
 
-				if (redBarrier[0].active == true)
-					al_draw_bitmap(AsImage[0], 50, 500, 0);
-				if (redBarrier[1].active == true)
-					al_draw_bitmap(AsImage[1], 435, 500, 0);
-				if (redBarrier[2].active == true)
-					al_draw_bitmap(AsImage[2], 820, 500, 0);
-
+				redBarrier[0].drawIfActive(50, 500);
+				redBarrier[1].drawIfActive(435, 500);
+				redBarrier[2].drawIfActive(820, 500);
 
 
 				if (playerBullet.status == 1 && player.active)												//if bullet still active
@@ -894,3 +870,29 @@ void Reactivate_Barriers()
 
 }
 
+void UpdateBarrierImages(ALLEGRO_BITMAP *SpaceBarrier[])
+{
+	for (int i = 0; i < 3; i++)
+	{
+		if (redBarrier[i].life_points != -1)
+		{
+			redBarrier[i].CurrentImage = SpaceBarrier[redBarrier[i].life_points];
+		}
+
+		if (redBarrier[i].life_points == 5)
+			redBarrier[i].CurrentImage = SpaceBarrier[4];
+		if (redBarrier[i].life_points == 4)
+			redBarrier[i].CurrentImage = SpaceBarrier[3];
+		if (redBarrier[i].life_points == 3)
+			redBarrier[i].CurrentImage = SpaceBarrier[2];
+		if (redBarrier[i].life_points == 2)
+			redBarrier[i].CurrentImage = SpaceBarrier[1];
+		if (redBarrier[i].life_points == 1)
+			redBarrier[i].CurrentImage = SpaceBarrier[0];
+
+	}
+
+
+
+
+}
