@@ -670,11 +670,11 @@ void enemyShoot()
 
 void updateBullet()
 {
-	if (playerBullet.status == 0)												//while bullet not active sets pos of ship as initial bullet pos
+	if (playerBullet.status == 0)																	//while bullet not active sets pos of ship as initial bullet pos
 		playerBullet.UpdateBulletPos(player);
 }
 
-bool reachEnd() //returns true if any enemy hits either of the sides
+bool reachEnd()																						//returns true if any enemy hits either of the sides
 {
 	for (int i = 0; i < NUM_COLUMNS; i++)
 	{
@@ -682,12 +682,12 @@ bool reachEnd() //returns true if any enemy hits either of the sides
 		{
 			if (arrEnem[i][j].active)																//checks if enemy active
 			{
-				if (width-80 < arrEnem[i][j].x_pos && arrEnem[i][j].speed > 0) //if moving to the right and close to right wall
+				if (width-80 < arrEnem[i][j].x_pos && arrEnem[i][j].speed > 0)						//if moving to the right and close to right wall
 				{
 					return true;
 					break;
 				}
-				else if (10 > arrEnem[i][j].x_pos && arrEnem[i][j].speed < 0)	//if moving to the left and close to left wall
+				else if (10 > arrEnem[i][j].x_pos && arrEnem[i][j].speed < 0)						//if moving to the left and close to left wall
 				{
 					return true;
 					break;
@@ -794,11 +794,6 @@ void BulletBarrierCollide()
 	}
 }
 
-
-
-
-
-
 void updateEnemyCount()
 {
 
@@ -832,8 +827,6 @@ void updateEnemyCount()
 	}
 }
 
-
-
 void EnemyReachEnd()
 {
 	for (int i = 0; i < NUM_COLUMNS; i++)
@@ -860,4 +853,3 @@ void Reactivate_Barriers()
 	}
 
 }
-
