@@ -7,7 +7,6 @@ public:
 
 	Barrier();
 	void SetBarrierpos(int x, int y);
-	void SetBarrierBound(int x, int y, int h);
 	void setLife(int l);
 
 	int x_pos;
@@ -15,8 +14,8 @@ public:
 	int life_points;
 	bool active;
 
-	int BHeight;
-	int Bright;
-	int Bleft;
+	int BHeight = 31;
+	int Bright = 100;
+	int Bleft  = 0;
 
 };

@@ -9,15 +9,16 @@ void Barrier::SetBarrierpos(int x, int y)
 
 }
 
-void Barrier::SetBarrierBound(int x, int y, int h)
-{
-	Bright = x;
-	Bleft = y;
-	BHeight = h;
-}
 
 void Barrier::setLife(int l)
 {
 	life_points = l;
 }
-Barrier::Barrier() {}
+Barrier::Barrier() 
+{
+	 life_points = 5;
+	 BHeight = 31;
+	 Bright = 100;
+	 Bleft = 0;
+	 active = true;
+}

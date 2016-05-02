@@ -10,6 +10,8 @@
 #include <allegro5\allegro_acodec.h>
 #include <string>
 #include <string.h>
+#include <iostream>
+#include <fstream>
 
 #include "Enemy.h"
 #include "Spaceship.h"
@@ -64,7 +66,7 @@ BackGround MG;
 BackGround FG;
 BackGround MM;
 
-BackGround MBG;				//<---------------- what is this for?? Unused
+BackGround MBG;				//<---------------- what is this for? Unused
 
 
 int main(void)
@@ -101,7 +103,8 @@ int main(void)
 	ALLEGRO_BITMAP *bgImage = NULL;
 	ALLEGRO_BITMAP *mgImage = NULL;
 	ALLEGRO_BITMAP *fgImage = NULL;
-	ALLEGRO_BITMAP *MenuAnim[frames];
+	ALLEGRO_BITMAP *MenuAnim[frames];//to be removed
+	ALLEGRO_FILE *fghjbvc = NULL;
 
 	ALLEGRO_EVENT_QUEUE *TestQueue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
@@ -772,20 +775,15 @@ void DrawBackground(BackGround &back)
 
 void InitBarriers()
 {
-	redBarrier[0].SetBarrierBound(111, 10, 15);
 	redBarrier[0].SetBarrierpos(50, 500);
-	redBarrier[0].setLife(5);
-	redBarrier[0].active = true;
-
-	redBarrier[1].SetBarrierBound(111, 10, 15);
 	redBarrier[1].SetBarrierpos(435, 500);
-	redBarrier[1].setLife(5);
-	redBarrier[1].active = true;
-
-	redBarrier[2].SetBarrierBound(111, 10, 15);
 	redBarrier[2].SetBarrierpos(820, 500);
-	redBarrier[2].setLife(5);
-	redBarrier[2].active = true;
+
+	for (int i = 0; i < 3; i++)
+	{
+		redBarrier[i].setLife(5);
+		redBarrier[i].active = true;
+	}
 }
 
 void Reactivate_Enemies()
@@ -829,7 +827,7 @@ void BulletBarrierCollide()
 		if (redBarrier[i].active && playerBullet.status == 1)
 		{
 			if (playerBullet.x_pos >(redBarrier[i].x_pos - redBarrier[i].Bleft) && playerBullet.x_pos<(redBarrier[i].x_pos + redBarrier[i].Bright)
-				&& playerBullet.y_pos>(redBarrier[i].y_pos - redBarrier[i].BHeight) && playerBullet.y_pos < (redBarrier[i].y_pos + redBarrier[i].BHeight + 17))
+				&& playerBullet.y_pos>(redBarrier[i].y_pos - redBarrier[i].BHeight) && playerBullet.y_pos < (redBarrier[i].y_pos + redBarrier[i].BHeight))
 			{
 				playerBullet.status = 0;
 			}
