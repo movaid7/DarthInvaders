@@ -64,6 +64,7 @@ Barrier		Asteroid[3];
 BackGround BG;
 BackGround MG;
 BackGround FG;
+BackGround MM;
 
 // \/ MOVE TO CLASS \/
 struct MovingBackground
@@ -90,10 +91,15 @@ int main(void)
 	const int FPS = 60;
 	bool done = false;
 	bool redraw = true;
+	const int frames = 28;
+	int CurrentFrame = 0;
+	int Delay = 10;
 
 	InitialiseBarriers();
 
 	MovingBackground MBG;
+	
+
 
 	if(!al_init())
 	{
@@ -113,6 +119,8 @@ int main(void)
 	ALLEGRO_BITMAP *picEnemy = NULL;
 	ALLEGRO_BITMAP *Game = NULL;
 	ALLEGRO_BITMAP *MENU = NULL;
+	ALLEGRO_BITMAP *MenuAnim[frames];
+	
 	
 	
 	ALLEGRO_EVENT_QUEUE *TestQueue = NULL;
@@ -157,7 +165,7 @@ int main(void)
 	picShip =al_load_bitmap("player1.png");
 	picEnemy = al_load_bitmap("enemy.png");
     Game = al_load_bitmap("Goodpic.png");
-	MENU = al_load_bitmap("star_sky.png");
+	MENU = al_load_bitmap("starBG.png");
 
 	Barrier[0] = al_load_bitmap("B4.png");
 	Barrier[1] = al_load_bitmap("B3.png");
@@ -167,6 +175,42 @@ int main(void)
 
 	for (int i = 0; i < 5; i++)
 		al_convert_mask_to_alpha(Barrier[i], al_map_rgb(255, 255, 255));
+
+
+	MenuAnim[0] = al_load_bitmap("S1.png");
+	MenuAnim[1] = al_load_bitmap("S2.png");
+	MenuAnim[2] = al_load_bitmap("S3.png");
+	MenuAnim[3] = al_load_bitmap("S4.png");
+	MenuAnim[4] = al_load_bitmap("S5.png");
+	MenuAnim[5] = al_load_bitmap("S6.png");
+	MenuAnim[6] = al_load_bitmap("S7.png");
+	MenuAnim[7] = al_load_bitmap("S8.png");
+	MenuAnim[8] = al_load_bitmap("S9.png");
+	MenuAnim[9] = al_load_bitmap("S10.png");
+	MenuAnim[10] = al_load_bitmap("S11.png");
+	MenuAnim[11] = al_load_bitmap("S12.png");
+	MenuAnim[12] = al_load_bitmap("S13.png");
+	MenuAnim[13] = al_load_bitmap("S14.png");
+	MenuAnim[14] = al_load_bitmap("S15.png");
+	MenuAnim[15] = al_load_bitmap("S16.png");
+	MenuAnim[16] = al_load_bitmap("S17.png");
+	MenuAnim[17] = al_load_bitmap("S18.png");
+	MenuAnim[18] = al_load_bitmap("S19.png");
+	MenuAnim[19] = al_load_bitmap("S20.png");
+	MenuAnim[20] = al_load_bitmap("S21.png");
+	MenuAnim[21] = al_load_bitmap("S22.png");
+	MenuAnim[22] = al_load_bitmap("S23.png");
+	MenuAnim[23] = al_load_bitmap("S24.png");
+	MenuAnim[24] = al_load_bitmap("S25.png");
+	MenuAnim[25] = al_load_bitmap("S26.png");
+	MenuAnim[26] = al_load_bitmap("S27.png");
+	MenuAnim[27] = al_load_bitmap("S28.png");
+
+	for (int i = 0; i < 28; i++) {
+   	al_convert_mask_to_alpha(MenuAnim[i], al_map_rgb(239, 241, 240));
+	
+	 }
+
 
 	AsImage[0] = Barrier[4];
 	AsImage[1] = Barrier[4];
@@ -184,9 +228,9 @@ int main(void)
 	mgImage = al_load_bitmap("starMG.jpg");
 	fgImage = al_load_bitmap("starFG.png");
 
-	for (int i = 0; i < 7; i++)
+	for (int i = 0; i < 7; i++) {
 		al_convert_mask_to_alpha(picHealth[i], al_map_rgb(0, 0, 0));
-
+	}
 	al_convert_mask_to_alpha(picShip,al_map_rgb(0,0,0));
 	al_convert_mask_to_alpha(picEnemy, al_map_rgb(0, 0, 0));
 	al_convert_mask_to_alpha(picBullet, al_map_rgb(0, 0, 0));
@@ -195,6 +239,7 @@ int main(void)
 	InitBackground(BG, 0, 0, 1, 0, 800, 600, -1, 1, bgImage);
 	InitBackground(MG, 0, 0, 3, 0, 2000, 768, -1, 1, mgImage);
 	InitBackground(FG, 0, 0, 5, 0, 800, 600, -1, 1, fgImage);
+	InitBackground(MM, 0, 0, 1, 0, 800, 600, -1, 1,MENU);
 
 	al_set_display_icon(DISPLAY, picShip);
 
@@ -228,6 +273,7 @@ int main(void)
 		else if (GETKEY.type == ALLEGRO_EVENT_TIMER)
 		{
 			redraw = true;
+			UpdateBackground(MM);
 			frameCount++;
 			if (keys[LEFT])
 				player.MoveSpaceshipLeft();
@@ -235,8 +281,12 @@ int main(void)
 				player.MoveSpaceshipRight();
 			if (keys[SPACE])														//Spacebar will fire
 			{
-				if (gameState == 1)
+				if (gameState == 1) {
+
+					frameCount++;
+
 					gameState = 2;
+				}
 				else if(gameState ==2)
 				{
 					if (playerBullet.status ==0)
@@ -331,7 +381,20 @@ int main(void)
 			redraw = false;
 			if (gameState == 1)		//menu
 			{
-				al_draw_bitmap(MENU, 0, 0, 0);
+				 DrawBackground(MM);
+
+				 	if (++CurrentFrame >= Delay) {
+
+				 if (++CurrentFrame >= frames) {
+				 		CurrentFrame = 0;
+				 	frameCount = 0;
+
+				 	}
+				 	}
+
+
+				 al_draw_bitmap(MenuAnim[CurrentFrame], 820, 500, 0);
+
 				
 				al_draw_text(font25, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMMST  PRESENTS");
 				al_draw_text(font50, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH   INVADERS");
@@ -473,6 +536,9 @@ int main(void)
 	}
 
 	//Destroy allegro variables
+	for (int i = 0; i < 28; i++) {
+		al_destroy_bitmap(MenuAnim[i]);
+	}
 	al_destroy_sample(blaster);
 	al_destroy_sample(explosion);
 	al_destroy_sample(startGame);
@@ -716,6 +782,7 @@ void UpdateBackground(BackGround &back)
 	back.x += back.velX * back.dirX;
 	if (back.x + back.WIDTH <= 0)
 			back.x = 0;
+	
 }
 
 void DrawBackground(BackGround &back)
@@ -724,6 +791,8 @@ void DrawBackground(BackGround &back)
 	al_draw_bitmap(back.image, back.x + back.WIDTH, back.HEIGHT, 0);
 	al_draw_bitmap(back.image, back.x, back.HEIGHT, 0);		
 	al_draw_bitmap(back.image, back.x + back.WIDTH, back.y, 0);
+
+	
 }
 
 
