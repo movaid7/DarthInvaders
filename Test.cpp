@@ -116,6 +116,9 @@ int main(void)
 	ALLEGRO_SAMPLE *explosion = NULL;
 	ALLEGRO_SAMPLE *music = NULL;
 	ALLEGRO_SAMPLE *startGame = NULL;
+	ALLEGRO_SAMPLE *emperor1 = NULL;
+	ALLEGRO_SAMPLE *emperor2 = NULL;
+	ALLEGRO_SAMPLE *emperor3 = NULL;
 	ALLEGRO_BITMAP *SpaceBarrier[5];
 	ALLEGRO_USTR* str = al_ustr_new("ENTER NAME: ");
 
@@ -143,7 +146,10 @@ int main(void)
 	explosion = al_load_sample("Blast.ogg");
 	startGame = al_load_sample("xwing.ogg");
 	music = al_load_sample("Star_Wars.ogg");
-	
+	emperor1 = al_load_sample("Emperor1.ogg");
+	emperor2 = al_load_sample("Emperor2.ogg");
+	emperor3 = al_load_sample("Emperor3.ogg");
+
 	//Load Pictures
 	picBullet=al_load_bitmap("Lazer.png");
 	picShip =al_load_bitmap("player1.png");
@@ -259,9 +265,9 @@ int main(void)
 			if (keys[SPACE])														//Spacebar will fire
 			{
 				if (gameState == 1) {
-
+					al_play_sample(startGame, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL); //plays when spaceship flies across screen
 					frameCount++;
-
+					
 					gameState = 2;
 				}
 				else if(gameState ==2)
@@ -382,10 +388,8 @@ int main(void)
 				DrawBackground(MG);
 				DrawBackground(FG);
 
-				// Make into method \/
 				UpdateBarrierImages(SpaceBarrier);
-
-
+				
 				redBarrier[0].drawIfActive(50, 500);
 				redBarrier[1].drawIfActive(435, 500);
 				redBarrier[2].drawIfActive(820, 500);
@@ -463,12 +467,19 @@ int main(void)
 				if (player.health == 0)
 				{
 					al_play_sample(explosion, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-					player.health = 1;															// <--- bush method to make it only sound once :p
+					if(frameCount % 7 == 0)
+						al_play_sample(emperor3, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+					else if (frameCount % 3 == 0)
+						al_play_sample(emperor2, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+					else
+						al_play_sample(emperor1, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+
+					player.health = 1;															// <--- shortcut method to make it only sound once :p
 				}
 
 				//check to determine if he made a highscore
 				if(score>lowScore)
-					isHighscore = true; 
+					isHighscore = true;
 
 				nameString = al_cstr_dup(str);
 				al_draw_textf(font50, al_map_rgb(255, 0, 0), width / 2 - 250, height / 2 - 200, 0, "FINAL SCORE: %i", score);
@@ -496,6 +507,9 @@ int main(void)
 	al_destroy_sample(explosion);
 	al_destroy_sample(startGame);
 	al_destroy_sample(music);
+	al_destroy_sample(emperor1);
+	al_destroy_sample(emperor2);
+	al_destroy_sample(emperor3);
 
 	al_destroy_event_queue(TestQueue);
 	al_destroy_timer(timer);
