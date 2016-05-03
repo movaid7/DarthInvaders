@@ -158,7 +158,7 @@ int main(void)
 	MENU = al_load_bitmap("starBG.png");
 
 	for (int i = 0; i < 5; i++)
-		SpaceBarrier[i] = al_load_bitmap(redBarrier[0].Images[i]);
+		SpaceBarrier[i] = al_load_bitmap(Images[i]);
 
 	for (int i = 0; i < 5; i++)
 		al_convert_mask_to_alpha(SpaceBarrier[i], al_map_rgb(255, 255, 255));

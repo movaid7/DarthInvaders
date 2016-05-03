@@ -17,7 +17,7 @@ public:
 	int life_points;
 	bool active;
 	ALLEGRO_BITMAP *CurrentImage;
-	const char *Images[5] = { "B4.png","B3.png","B2.png","B1.png","B0.png" };
+	
 
 	int BHeight = 31;
 	int Bright = 100;
@@ -25,3 +25,5 @@ public:
 
 
 };
+
+static const char *Images[5] = { "B4.png","B3.png","B2.png","B1.png","B0.png" };
