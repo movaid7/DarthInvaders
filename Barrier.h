@@ -19,9 +19,9 @@ public:
 	ALLEGRO_BITMAP *CurrentImage;
 	
 
-	int BHeight = 31;
-	int Bright = 100;
-	int Bleft  = 0;
+	const int BHeight = 31;
+	const int Bright = 100;
+	const int Bleft  = 0;
 
 
 };

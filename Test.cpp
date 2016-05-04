@@ -49,6 +49,7 @@ void UpdateBackground(BackGround &back);
 void DrawBackground(BackGround &back);
 void CollideBarrier();
 void Reactivate_Enemies();
+
 void EnemyReachEnd();
 void BulletBarrierCollide();
 void InitBarriers();
@@ -889,8 +890,7 @@ void UpdateBarrierImages(ALLEGRO_BITMAP *SpaceBarrier[])
 			redBarrier[i].CurrentImage = SpaceBarrier[1];
 		if (redBarrier[i].life_points == 1)
 			redBarrier[i].CurrentImage = SpaceBarrier[0];
-
-	}
+}
 
 
 

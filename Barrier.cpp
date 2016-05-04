@@ -17,9 +17,6 @@ void Barrier::setLife(int l)
 Barrier::Barrier() 
 {
 	 life_points = 5;
-	 BHeight = 31;
-	 Bright = 100;
-	 Bleft = 0;
 	 active = true;
 }
 
