@@ -1,4 +1,6 @@
 #pragma once
+#include<allegro5\allegro.h>
+#include<allegro5\allegro_image.h>
 using namespace std;
 class Barrier
 {
@@ -7,16 +9,21 @@ public:
 
 	Barrier();
 	void SetBarrierpos(int x, int y);
-	void SetBarrierBound(int x, int y, int h);
 	void setLife(int l);
+	void drawIfActive(float x, float y);
 
 	int x_pos;
 	int y_pos;
 	int life_points;
 	bool active;
+	ALLEGRO_BITMAP *CurrentImage;
+	
 
-	int BHeight;
-	int Bright;
-	int Bleft;
+	int BHeight = 31;
+	int Bright = 100;
+	int Bleft  = 0;
+
 
 };
+
+static const char *Images[5] = { "B4.png","B3.png","B2.png","B1.png","B0.png" };
