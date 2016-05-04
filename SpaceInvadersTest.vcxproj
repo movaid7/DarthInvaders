@@ -81,6 +81,7 @@
     <ClCompile Include="BackGround.cpp" />
     <ClCompile Include="Barrier.cpp" />
     <ClCompile Include="Global.cpp" />
+    <ClCompile Include="Highscores.cpp" />
     <ClCompile Include="Spaceship.cpp" />
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Enemy.cpp" />
@@ -89,6 +90,7 @@
   <ItemGroup>
     <ClInclude Include="BackGround.h" />
     <ClInclude Include="Barrier.h" />
+    <ClInclude Include="Highscores.h" />
     <ClInclude Include="Spaceship.h" />
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="Enemy.h" />
