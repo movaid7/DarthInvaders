@@ -68,8 +68,6 @@ BackGround MG;
 BackGround FG;
 BackGround MM;
 
-BackGround MBG;				//<---------------- what is this for? Unused
-
 
 int main(void)
 {
@@ -106,18 +104,20 @@ int main(void)
 	ALLEGRO_BITMAP *mgImage = NULL;
 	ALLEGRO_BITMAP *fgImage = NULL;
 	ALLEGRO_BITMAP *MenuAnim[frames];//to be removed
-	ALLEGRO_FILE *fghjbvc = NULL;
+	ALLEGRO_BITMAP *SpaceBarrier[5];
 
 	ALLEGRO_EVENT_QUEUE *TestQueue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
-	ALLEGRO_FONT *font25 = NULL;
-	ALLEGRO_FONT *font50 = NULL;
+	ALLEGRO_FONT *font38 = NULL;
+	ALLEGRO_FONT *starFont = NULL;
 	ALLEGRO_FONT *fontName = NULL;
 	ALLEGRO_SAMPLE *blaster = NULL;
 	ALLEGRO_SAMPLE *explosion = NULL;
 	ALLEGRO_SAMPLE *music = NULL;
 	ALLEGRO_SAMPLE *startGame = NULL;
-	ALLEGRO_BITMAP *SpaceBarrier[5];
+	ALLEGRO_SAMPLE *emperor1 = NULL;
+	ALLEGRO_SAMPLE *emperor2 = NULL;
+	ALLEGRO_SAMPLE *emperor3 = NULL;
 	ALLEGRO_USTR* str = al_ustr_new("ENTER NAME: ");
 
 	//Allegro Module Init
@@ -144,7 +144,10 @@ int main(void)
 	explosion = al_load_sample("Blast.ogg");
 	startGame = al_load_sample("xwing.ogg");
 	music = al_load_sample("Star_Wars.ogg");
-	
+	emperor1 = al_load_sample("Emperor1.ogg");
+	emperor2 = al_load_sample("Emperor2.ogg");
+	emperor3 = al_load_sample("Emperor3.ogg");
+
 	//Load Pictures
 	picBullet=al_load_bitmap("Lazer.png");
 	picShip =al_load_bitmap("player1.png");
@@ -234,8 +237,8 @@ int main(void)
 	int score = 0;
 	int frameCount = 0;
 	int pos = (int)al_ustr_size(str);
-	font25 = al_load_font("Legacy.ttf", 38, 0);
-	font50 = al_load_font("STARWARS.TTF", 55, 0);
+	font38 = al_load_font("Legacy.ttf", 38, 0);
+	starFont = al_load_font("STARWARS.TTF", 55, 0);
 	fontName = al_load_font("Legacy.ttf", 38, 0);
 	
 	while (!done)
@@ -260,9 +263,7 @@ int main(void)
 			if (keys[SPACE])														//Spacebar will fire
 			{
 				if (gameState == 1) {
-
-					frameCount++;
-
+					al_play_sample(startGame, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL); //plays when spaceship flies across screen
 					gameState = 2;
 				}
 				else if(gameState ==2)
@@ -371,10 +372,10 @@ int main(void)
 
 				al_draw_bitmap(MenuAnim[CurrentFrame], 820, 500, 0); //to be removed
 
-				al_draw_text(font25, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMMST  PRESENTS");
-				al_draw_text(font50, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH   INVADERS");
-				al_draw_text(font25, al_map_rgb(255, 40, 78), (width / 2), (height) - 350, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
-				al_draw_text(font25, al_map_rgb(255, 40, 78), (width / 2), (height -300) , ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMMST  PRESENTS");
+				al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH   INVADERS");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height) - 350, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height -300) , ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
 				}
 
 			else if (gameState == 2)	//main game
@@ -383,10 +384,8 @@ int main(void)
 				DrawBackground(MG);
 				DrawBackground(FG);
 
-				// Make into method \/
 				UpdateBarrierImages(SpaceBarrier);
-
-
+				
 				redBarrier[0].drawIfActive(50, 500);
 				redBarrier[1].drawIfActive(435, 500);
 				redBarrier[2].drawIfActive(820, 500);
@@ -456,7 +455,7 @@ int main(void)
 									
 				}
 
-				al_draw_textf(font25, al_map_rgb(255, 0, 0), 10, 0, 0, "SCORE: %i", score);								
+				al_draw_textf(font38, al_map_rgb(255, 0, 0), 10, 0, 0, "SCORE: %i", score);								
 			}
 
 			else if(gameState == 3) //end game
@@ -464,15 +463,22 @@ int main(void)
 				if (player.health == 0)
 				{
 					al_play_sample(explosion, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-					player.health = 1;															// <--- bush method to make it only sound once :p
+					if(frameCount % 7 == 0)
+						al_play_sample(emperor3, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+					else if (frameCount % 3 == 0)
+						al_play_sample(emperor2, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+					else
+						al_play_sample(emperor1, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+
+					player.health = 1;															// <--- shortcut method to make it only sound once :p
 				}
 
 				//check to determine if he made a highscore
 				if(score>lowScore)
-					isHighscore = true; 
+					isHighscore = true;
 
 				nameString = al_cstr_dup(str);
-				al_draw_textf(font50, al_map_rgb(255, 0, 0), width / 2 - 250, height / 2 - 200, 0, "FINAL SCORE: %i", score);
+				al_draw_textf(starFont, al_map_rgb(255, 0, 0), width / 2 - 250, height / 2 - 200, 0, "FINAL SCORE: %i", score);
 
 				if(isHighscore)
 					al_draw_text(fontName, al_map_rgb_f(1, 1, 1), width / 2 - 250, height / 2 - 100, ALLEGRO_ALIGN_LEFT, nameString);
@@ -497,13 +503,16 @@ int main(void)
 	al_destroy_sample(explosion);
 	al_destroy_sample(startGame);
 	al_destroy_sample(music);
+	al_destroy_sample(emperor1);
+	al_destroy_sample(emperor2);
+	al_destroy_sample(emperor3);
 
 	al_destroy_event_queue(TestQueue);
 	al_destroy_timer(timer);
 	al_destroy_display(DISPLAY);
 
-	al_destroy_font(font25);
-	al_destroy_font(font50);
+	al_destroy_font(font38);
+	al_destroy_font(starFont);
 
 	al_destroy_bitmap(Game);
 	al_destroy_bitmap(MENU);
