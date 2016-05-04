@@ -110,7 +110,6 @@ int main(void)
 
 	ALLEGRO_EVENT_QUEUE *TestQueue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
-	ALLEGRO_TIMER *menutimer = NULL;
 	ALLEGRO_FONT *font38 = NULL;
 	ALLEGRO_FONT *starFont = NULL;
 	ALLEGRO_FONT *fontName = NULL;
@@ -196,7 +195,6 @@ int main(void)
 	InitBarriers();
 
 	timer = al_create_timer(1.0 / FPS);
-	menutimer = al_create_timer(1.0 / FPS);
 
 	al_set_display_icon(DISPLAY, picShip);
 	al_play_sample(music, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP, NULL);
@@ -205,9 +203,9 @@ int main(void)
 	al_register_event_source(TestQueue,al_get_keyboard_event_source());
 	al_register_event_source(TestQueue,al_get_display_event_source(DISPLAY));
 	al_register_event_source(TestQueue,al_get_timer_event_source(timer));
-	al_register_event_source(TestQueue, al_get_timer_event_source(menutimer));
+
 	al_start_timer(timer);
-	al_start_timer(menutimer);
+
 
 	int score = 0;
 	int frameCount = 0;
@@ -339,7 +337,7 @@ int main(void)
 
 				if (GETKEY.type == ALLEGRO_EVENT_TIMER)
 				{
-					if (GETKEY.timer.source == menutimer)
+					if (GETKEY.timer.source == timer)
 					{
 						DrawAnimation(Player, y);
 					}
