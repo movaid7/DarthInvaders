@@ -49,6 +49,7 @@ void UpdateBackground(BackGround &back);
 void DrawBackground(BackGround &back);
 void CollideBarrier();
 void Reactivate_Enemies();
+void DrawAnimation(ALLEGRO_BITMAP *X, int &y);
 
 void EnemyReachEnd();
 void BulletBarrierCollide();
@@ -81,6 +82,7 @@ int main(void)
 	bool redraw = true;
 	int CurrentFrame = 0;
 	const int frames = 28;
+	int y = 600;
 	
 	// \/ no need to use variable 
 	int Delay = 10;					
@@ -104,9 +106,11 @@ int main(void)
 	ALLEGRO_BITMAP *mgImage = NULL;
 	ALLEGRO_BITMAP *fgImage = NULL;
 	ALLEGRO_BITMAP *SpaceBarrier[5];
+	ALLEGRO_BITMAP *Player;
 
 	ALLEGRO_EVENT_QUEUE *TestQueue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
+	ALLEGRO_TIMER *menutimer = NULL;
 	ALLEGRO_FONT *font38 = NULL;
 	ALLEGRO_FONT *starFont = NULL;
 	ALLEGRO_FONT *fontName = NULL;
@@ -176,12 +180,14 @@ int main(void)
 	bgImage = al_load_bitmap("starBG.png");
 	mgImage = al_load_bitmap("starMG.jpg");
 	fgImage = al_load_bitmap("starFG.png");
+	Player = al_load_bitmap("player1.png");
 
 		
 	al_convert_mask_to_alpha(picShip,al_map_rgb(0,0,0));
 	al_convert_mask_to_alpha(picEnemy, al_map_rgb(0, 0, 0));
 	al_convert_mask_to_alpha(picBullet, al_map_rgb(0, 0, 0));
 	al_convert_mask_to_alpha(mgImage, al_map_rgb(0, 0, 0));
+	al_convert_mask_to_alpha(Player, al_map_rgb(0, 0, 0));
 
 	InitBackground(BG, 0, 0, 1, 0, 800, 600, -1, 1, bgImage);
 	InitBackground(MG, 0, 0, 3, 0, 2000, 768, -1, 1, mgImage);
@@ -190,6 +196,7 @@ int main(void)
 	InitBarriers();
 
 	timer = al_create_timer(1.0 / FPS);
+	menutimer = al_create_timer(1.0 / FPS);
 
 	al_set_display_icon(DISPLAY, picShip);
 	al_play_sample(music, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP, NULL);
@@ -198,7 +205,9 @@ int main(void)
 	al_register_event_source(TestQueue,al_get_keyboard_event_source());
 	al_register_event_source(TestQueue,al_get_display_event_source(DISPLAY));
 	al_register_event_source(TestQueue,al_get_timer_event_source(timer));
+	al_register_event_source(TestQueue, al_get_timer_event_source(menutimer));
 	al_start_timer(timer);
+	al_start_timer(menutimer);
 
 	int score = 0;
 	int frameCount = 0;
@@ -327,6 +336,16 @@ int main(void)
 			if (gameState == 1)		//menu
 			{
 				DrawBackground(MM);
+
+				if (GETKEY.type == ALLEGRO_EVENT_TIMER)
+				{
+					if (GETKEY.timer.source == menutimer)
+					{
+						DrawAnimation(Player, y);
+					}
+				}
+
+
 
 				al_draw_text(font38, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMMST  PRESENTS");
 				al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH   INVADERS");
@@ -852,9 +871,17 @@ void UpdateBarrierImages(ALLEGRO_BITMAP *SpaceBarrier[])
 			redBarrier[i].CurrentImage = SpaceBarrier[1];
 		if (redBarrier[i].life_points == 1)
 			redBarrier[i].CurrentImage = SpaceBarrier[0];
+	}
 }
 
+void DrawAnimation(ALLEGRO_BITMAP *X, int &y)
+{
 
-
-
+	al_draw_bitmap(X, 50, y, 0);
+	al_draw_bitmap(X, 875, y, 0);
+	y = y - 1;
+	if (y == 0)
+	{
+		y = 600;
+	}
 }
