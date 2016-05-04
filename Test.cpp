@@ -103,7 +103,6 @@ int main(void)
 	ALLEGRO_BITMAP *bgImage = NULL;
 	ALLEGRO_BITMAP *mgImage = NULL;
 	ALLEGRO_BITMAP *fgImage = NULL;
-	ALLEGRO_BITMAP *MenuAnim[frames];//to be removed
 	ALLEGRO_BITMAP *SpaceBarrier[5];
 
 	ALLEGRO_EVENT_QUEUE *TestQueue = NULL;
@@ -163,39 +162,6 @@ int main(void)
 
 	for (int i = 0; i < 3; i++)
 		redBarrier[i].CurrentImage = SpaceBarrier[4];
-
-	// \/ Remove \/
-	MenuAnim[0] = al_load_bitmap("S1.png");
-	MenuAnim[1] = al_load_bitmap("S2.png");
-	MenuAnim[2] = al_load_bitmap("S3.png");
-	MenuAnim[3] = al_load_bitmap("S4.png");
-	MenuAnim[4] = al_load_bitmap("S5.png");
-	MenuAnim[5] = al_load_bitmap("S6.png");
-	MenuAnim[6] = al_load_bitmap("S7.png");
-	MenuAnim[7] = al_load_bitmap("S8.png");
-	MenuAnim[8] = al_load_bitmap("S9.png");
-	MenuAnim[9] = al_load_bitmap("S10.png");
-	MenuAnim[10] = al_load_bitmap("S11.png");
-	MenuAnim[11] = al_load_bitmap("S12.png");
-	MenuAnim[12] = al_load_bitmap("S13.png");
-	MenuAnim[13] = al_load_bitmap("S14.png");
-	MenuAnim[14] = al_load_bitmap("S15.png");
-	MenuAnim[15] = al_load_bitmap("S16.png");
-	MenuAnim[16] = al_load_bitmap("S17.png");
-	MenuAnim[17] = al_load_bitmap("S18.png");
-	MenuAnim[18] = al_load_bitmap("S19.png");
-	MenuAnim[19] = al_load_bitmap("S20.png");
-	MenuAnim[20] = al_load_bitmap("S21.png");
-	MenuAnim[21] = al_load_bitmap("S22.png");
-	MenuAnim[22] = al_load_bitmap("S23.png");
-	MenuAnim[23] = al_load_bitmap("S24.png");
-	MenuAnim[24] = al_load_bitmap("S25.png");
-	MenuAnim[25] = al_load_bitmap("S26.png");
-	MenuAnim[26] = al_load_bitmap("S27.png");
-	MenuAnim[27] = al_load_bitmap("S28.png");
-	for (int i = 0; i < 28; i++) 
-   		al_convert_mask_to_alpha(MenuAnim[i], al_map_rgb(239, 241, 240));
-	 
 	
 	picHealth[0] = al_load_bitmap("1.png");
 	picHealth[1] = al_load_bitmap("2.png");
@@ -361,16 +327,6 @@ int main(void)
 			if (gameState == 1)		//menu
 			{
 				DrawBackground(MM);
-				if (++CurrentFrame >= Delay) 
-				{
-					if (++CurrentFrame >= frames) 
-					{
-				 		CurrentFrame = 0;
-				 		frameCount = 0;
-				 	}
-				 }
-
-				al_draw_bitmap(MenuAnim[CurrentFrame], 820, 500, 0); //to be removed
 
 				al_draw_text(font38, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMMST  PRESENTS");
 				al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH   INVADERS");
@@ -495,10 +451,7 @@ int main(void)
 		 }
 	}
 
-	//Destroy allegro variables
-	for (int i = 0; i < 28; i++) {
-		al_destroy_bitmap(MenuAnim[i]);
-	}
+
 	al_destroy_sample(blaster);
 	al_destroy_sample(explosion);
 	al_destroy_sample(startGame);
