@@ -147,20 +147,19 @@ int main(void)
 
 	//load sounds
 	al_reserve_samples(4);
-	blaster = al_load_sample("XWing-Laser.ogg");
-	explosion = al_load_sample("Blast.ogg");
-	startGame = al_load_sample("xwing.ogg");
-	music = al_load_sample("Star_Wars.ogg");
-	emperor1 = al_load_sample("Emperor1.ogg");
-	emperor2 = al_load_sample("Emperor2.ogg");
-	emperor3 = al_load_sample("Emperor3.ogg");
+	blaster = al_load_sample("Sounds/XWing-Laser.ogg");
+	explosion = al_load_sample("Sounds/Blast.ogg");
+	startGame = al_load_sample("Sounds/xwing.ogg");
+	music = al_load_sample("Sounds/Star_Wars.ogg");
+	emperor1 = al_load_sample("Sounds/Emperor1.ogg");
+	emperor2 = al_load_sample("Sounds/Emperor2.ogg");
+	emperor3 = al_load_sample("Sounds/Emperor3.ogg");
 
 	//Load Pictures
-	picBullet=al_load_bitmap("Lazer.png");
-	picShip =al_load_bitmap("player1.png");
-	picEnemy = al_load_bitmap("enemy.png");
-    Game = al_load_bitmap("Goodpic.png");
-	MENU = al_load_bitmap("starBG.png");
+	picBullet=al_load_bitmap("Pictures/Lazer.png");
+	picShip =al_load_bitmap("Pictures/player1.png");
+	picEnemy = al_load_bitmap("Pictures/enemy.png");
+	MENU = al_load_bitmap("Pictures/starBG.png");
 
 	for (int i = 0; i < 5; i++)
 		SpaceBarrier[i] = al_load_bitmap(Images[i]);
@@ -171,21 +170,21 @@ int main(void)
 	for (int i = 0; i < 3; i++)
 		redBarrier[i].CurrentImage = SpaceBarrier[4];
 	
-	picHealth[0] = al_load_bitmap("1.png");
-	picHealth[1] = al_load_bitmap("2.png");
-	picHealth[2] = al_load_bitmap("3.png");
-	picHealth[3] = al_load_bitmap("4.png");
-	picHealth[4] = al_load_bitmap("5.png");
-	picHealth[5] = al_load_bitmap("6.png");
-	picHealth[6] = al_load_bitmap("blank.png");
+	picHealth[0] = al_load_bitmap("Pictures/1.png");
+	picHealth[1] = al_load_bitmap("Pictures/2.png");
+	picHealth[2] = al_load_bitmap("Pictures/3.png");
+	picHealth[3] = al_load_bitmap("Pictures/4.png");
+	picHealth[4] = al_load_bitmap("Pictures/5.png");
+	picHealth[5] = al_load_bitmap("Pictures/6.png");
+	picHealth[6] = al_load_bitmap("Pictures/blank.png");
 	for (int i = 0; i < 7; i++)
 		al_convert_mask_to_alpha(picHealth[i], al_map_rgb(0, 0, 0));
 
-	bgImage = al_load_bitmap("starBG.png");
-	mgImage = al_load_bitmap("starMG.jpg");
-	fgImage = al_load_bitmap("starFG.png");
-	animShip = al_load_bitmap("player2.png");
-	logo = al_load_bitmap("logo.png");
+	bgImage = al_load_bitmap("Pictures/starBG.png");
+	mgImage = al_load_bitmap("Pictures/starMG.jpg");
+	fgImage = al_load_bitmap("Pictures/starFG.png");
+	animShip = al_load_bitmap("Pictures/player2.png");
+	logo = al_load_bitmap("Pictures/logo.png");
 				
 	al_convert_mask_to_alpha(picShip,al_map_rgb(0,0,0));
 	al_convert_mask_to_alpha(picEnemy, al_map_rgb(0, 0, 0));
@@ -213,9 +212,9 @@ int main(void)
 
 	int frameCount = 0;
 	int pos = (int)al_ustr_size(str);
-	font38 = al_load_font("Legacy.ttf", 38, 0);
-	starFont = al_load_font("STARWARS.TTF", 80, 0);
-	fontName = al_load_font("Legacy.ttf", 38, 0);
+	font38 = al_load_font("Fonts/Legacy.ttf", 38, 0);
+	starFont = al_load_font("Fonts/STARWARS.TTF", 80, 0);
+	fontName = al_load_font("Fonts/Legacy.ttf", 38, 0);
 	
 	while (!done)
 	{
