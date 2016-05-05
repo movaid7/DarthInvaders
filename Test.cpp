@@ -34,7 +34,7 @@ int numAlive = NUM_COLUMNS*NUM_ROWS;
 int EnemyWaveCount = 0;
 int input=0;																			//count variable to ensure action occurs only once
 int output = 0;																			//count variable to ensure action occurs only once
-int x = 50;																				//initial position of animated ship
+int x = 20;																				//initial position of animated ship
 int score = 0;
 char *nameString;
 bool startAnim = false;
@@ -111,6 +111,7 @@ int main(void)
 	ALLEGRO_BITMAP *fgImage = NULL;
 	ALLEGRO_BITMAP *SpaceBarrier[5];
 	ALLEGRO_BITMAP *animShip;
+	ALLEGRO_BITMAP *logo;
 
 	ALLEGRO_EVENT_QUEUE *TestQueue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
@@ -184,14 +185,14 @@ int main(void)
 	mgImage = al_load_bitmap("starMG.jpg");
 	fgImage = al_load_bitmap("starFG.png");
 	animShip = al_load_bitmap("player2.png");
-
-		
+	logo = al_load_bitmap("logo.png");
+				
 	al_convert_mask_to_alpha(picShip,al_map_rgb(0,0,0));
 	al_convert_mask_to_alpha(picEnemy, al_map_rgb(0, 0, 0));
 	al_convert_mask_to_alpha(picBullet, al_map_rgb(0, 0, 0));
 	al_convert_mask_to_alpha(mgImage, al_map_rgb(0, 0, 0));
 	al_convert_mask_to_alpha(animShip, al_map_rgb(0, 0, 0));
-
+	
 	InitBackground(BG, 0, 0, 1, 0, 800, 600, -1, 1, bgImage);
 	InitBackground(MG, 0, 0, 3, 0, 2000, 768, -1, 1, mgImage);
 	InitBackground(FG, 0, 0, 5, 0, 800, 600, -1, 1, fgImage);
@@ -213,7 +214,7 @@ int main(void)
 	int frameCount = 0;
 	int pos = (int)al_ustr_size(str);
 	font38 = al_load_font("Legacy.ttf", 38, 0);
-	starFont = al_load_font("STARWARS.TTF", 55, 0);
+	starFont = al_load_font("STARWARS.TTF", 80, 0);
 	fontName = al_load_font("Legacy.ttf", 38, 0);
 	
 	while (!done)
@@ -226,14 +227,15 @@ int main(void)
 		{
 			done = true;
 		}
+
 		else if (GETKEY.type == ALLEGRO_EVENT_TIMER)
 		{
 			redraw = true;
 			UpdateBackground(MM);
 			frameCount++;
-			if (keys[LEFT])
+			if (keys[LEFT] && gameState == 2)
 				player.MoveSpaceshipLeft();
-			if (keys[RIGHT])
+			if (keys[RIGHT] && gameState == 2)
 				player.MoveSpaceshipRight();
 			if (keys[SPACE])														//Spacebar will fire
 			{
@@ -345,10 +347,12 @@ int main(void)
 					DrawAnimation(animShip, x);
 				}
 				
-				al_draw_text(font38, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMMST  PRESENTS");
-				al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH   INVADERS");
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height) - 350, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height -300) , ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMMST PRESENTS");
+				al_draw_bitmap(logo, 140, (height)-690, 0);
+				//al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH");
+				//al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height)-590, ALLEGRO_ALIGN_CENTRE, "INVADERS");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height) - 150, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height -100) , ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
 				}
 
 			else if (gameState == 2)	//main game
@@ -506,6 +510,7 @@ int main(void)
 	al_destroy_bitmap(mgImage);
 	al_destroy_bitmap(fgImage);
 	al_destroy_bitmap(animShip);
+	al_destroy_bitmap(logo);
 	for (int i = 0; i < 7; i++)
 		al_destroy_bitmap(picHealth[i]);
 	for (int i = 0; i < 5; i++)
@@ -888,10 +893,10 @@ void UpdateBarrierImages(ALLEGRO_BITMAP *SpaceBarrier[])
 
 void DrawAnimation(ALLEGRO_BITMAP *pic, int &x)
 {
-	al_draw_bitmap(pic, x, 160, 0);
+	al_draw_bitmap(pic, x, 400, 0);
 	x = x + 6;
 
-	if (x == width - 20)
+	if (x > width - 20)
 	{
 		gameState = 2;
 	}
@@ -937,8 +942,14 @@ void writeScore()
 	ofstream OutputFile("scores.txt");
 	for (i = 0; i < 9; i++)
 	{
+		if (arrScores[i].name == "")
+			arrScores[i].name = "NAME";
 		OutputFile << arrScores[i].score << " " << arrScores[i].name << endl;
 	}
+
+	if (arrScores[i].name == "")
+		arrScores[i].name = "NAME";
 	OutputFile << arrScores[i].score << " " << arrScores[i].name;
+
 	OutputFile.close();
 }
