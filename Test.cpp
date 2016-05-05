@@ -296,8 +296,17 @@ int main(void)
 					if (al_ustr_prev(str, &pos))
 						al_ustr_truncate(str, pos);
 				break;
+				if (gameState == 4)
+					gameState = 2;
+				break;
 			case ALLEGRO_KEY_ENTER:												//will display leaderboard once they press enter.
 				if (gameState == 3)
+					gameState = 4;
+				break;
+
+			case ALLEGRO_KEY_L:
+
+				if (gameState == 1)
 					gameState = 4;
 				break;
 			}
@@ -353,6 +362,7 @@ int main(void)
 				al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height)-690, ALLEGRO_ALIGN_CENTRE, "DARTH   INVADERS");
 				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height)-350, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
 				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 300), ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2) - 25, height - 250, ALLEGRO_ALIGN_CENTRE, "PRESS L TO DISPLAY THE LEADERBOARD");
 			}
 
 			else if (gameState == 2)	//main game
@@ -440,6 +450,7 @@ int main(void)
 				if (player.health == 0)
 				{
 					al_play_sample(explosion, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+					al_draw_text(starFont, al_map_rgb(255, 0, 0), width / 2, (height / 2) - 250, 0, "PRESS BACKSPACE TO PLAY AGAIN");
 					if (frameCount % 7 == 0)
 						al_play_sample(emperor3, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 					else if (frameCount % 3 == 0)
@@ -450,7 +461,7 @@ int main(void)
 					player.health = 1;															// <--- shortcut method to make it only sound once :p
 				}
 
-				//check to determine if he made a highscore
+				//check to determine if he made a highscore , 
 				if (score>lowScore)
 					isHighscore = true;
 

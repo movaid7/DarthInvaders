@@ -26,4 +26,4 @@ public:
 
 };
 
-static const char *Images[5] = { "B4.png","B3.png","B2.png","B1.png","B0.png" };
+static const char *Images[5] = { "Pictures/B4.png","Pictures/B3.png","Pictures/B2.png","Pictures/B1.png","Pictures/B0.png" };
