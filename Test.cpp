@@ -12,7 +12,6 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
-#include <stdlib.h>
 
 #include "Enemy.h"
 #include "Spaceship.h"
@@ -20,26 +19,22 @@
 #include "Global.h"
 #include "BackGround.h"
 #include "Barrier.h"
-#include "Highscores.h"
 
 using namespace std;
 
 //GLOBALS
-enum KEYS {LEFT, RIGHT, SPACE};
-bool keys[5] = {false,false,false};
+enum KEYS { LEFT, RIGHT, SPACE };
+bool keys[5] = { false,false,false };
 int gameState = 1;																		//initial gamestate is menu
 extern int width;
 extern int height;
 int numAlive = NUM_COLUMNS*NUM_ROWS;
 int EnemyWaveCount = 0;
-int input=0;																			//count variable to ensure action occurs only once
-int output = 0;																			//count variable to ensure action occurs only once
-int x = 20;																				//initial position of animated ship
-int score = 0;
-char *nameString;
-bool startAnim = false;
-bool isHighscore = false;																//will be true if user's score is higher than lowest highscore
-int lowScore = 0;																		//value of lowest highscore
+int input = 0;
+char* nameString;
+
+bool isHighscore = false;																//READ IN LOWEST HIGHSCORE FIRST. USE THIS BOOL TO CHECK USER FINAL SCORE VS LOWEST HIGHSCORE
+int lowScore = 0;
 
 //METHODS
 void setEnemy();
@@ -54,9 +49,7 @@ void UpdateBackground(BackGround &back);
 void DrawBackground(BackGround &back);
 void CollideBarrier();
 void Reactivate_Enemies();
-void DrawAnimation(ALLEGRO_BITMAP *pic, int &y);
-void writeScore();
-void readScores();
+void DrawAnimation(ALLEGRO_BITMAP *X, int &y);
 
 void EnemyReachEnd();
 void BulletBarrierCollide();
@@ -66,12 +59,11 @@ void updateEnemyCount();
 void UpdateBarrierImages(ALLEGRO_BITMAP *SpaceBarrier[]);
 
 //INITIALISE
-Spaceship	player(width/2, height*4/5);
-Bullet		playerBullet(player.x_pos, player.y_pos,10,true);
-Bullet		enemyBullet(0,0,10,false);
+Spaceship	player(width / 2, height * 4 / 5);
+Bullet		playerBullet(player.x_pos, player.y_pos, 10, true);
+Bullet		enemyBullet(0, 0, 10, false);
 Enemy		arrEnem[NUM_COLUMNS][NUM_ROWS];												//array of objects
 Barrier		redBarrier[3];
-Highscores	arrScores[11];
 BackGround BG;
 BackGround MG;
 BackGround FG;
@@ -80,7 +72,6 @@ BackGround MM;
 
 int main(void)
 {
-	readScores();																					//reads in scores from textfile
 	setEnemy();
 	enemyBullet.isFriendly = false;
 	srand((unsigned)time(NULL));
@@ -91,13 +82,18 @@ int main(void)
 	bool redraw = true;
 	int CurrentFrame = 0;
 	const int frames = 28;
-	
-	if(!al_init())
+	int y = 600;
+
+	// \/ no need to use variable 
+	int Delay = 10;
+
+
+	if (!al_init())
 	{
-		al_show_native_message_box(NULL,NULL,NULL,"Could not initialize allegro",NULL,NULL);
+		al_show_native_message_box(NULL, NULL, NULL, "Could not initialize allegro", NULL, NULL);
 		return -1;
 	}
-	
+
 	//Allegro variables
 	ALLEGRO_DISPLAY *DISPLAY = NULL;
 	ALLEGRO_BITMAP *picHealth[7];
@@ -109,12 +105,13 @@ int main(void)
 	ALLEGRO_BITMAP *bgImage = NULL;
 	ALLEGRO_BITMAP *mgImage = NULL;
 	ALLEGRO_BITMAP *fgImage = NULL;
+	ALLEGRO_BITMAP *MenuAnim[frames];//to be removed
 	ALLEGRO_BITMAP *SpaceBarrier[5];
-	ALLEGRO_BITMAP *animShip;
-	ALLEGRO_BITMAP *logo;
+	ALLEGRO_BITMAP *Player;
 
 	ALLEGRO_EVENT_QUEUE *TestQueue = NULL;
 	ALLEGRO_TIMER *timer = NULL;
+	
 	ALLEGRO_FONT *font38 = NULL;
 	ALLEGRO_FONT *starFont = NULL;
 	ALLEGRO_FONT *fontName = NULL;
@@ -125,7 +122,7 @@ int main(void)
 	ALLEGRO_SAMPLE *emperor1 = NULL;
 	ALLEGRO_SAMPLE *emperor2 = NULL;
 	ALLEGRO_SAMPLE *emperor3 = NULL;
-	ALLEGRO_USTR* str = al_ustr_new("ENTER NAME");
+	ALLEGRO_USTR* str = al_ustr_new("ENTER NAME: ");
 
 	//Allegro Module Init
 	al_init_image_addon();
@@ -147,19 +144,20 @@ int main(void)
 
 	//load sounds
 	al_reserve_samples(4);
-	blaster = al_load_sample("Sounds/XWing-Laser.ogg");
-	explosion = al_load_sample("Sounds/Blast.ogg");
-	startGame = al_load_sample("Sounds/xwing.ogg");
-	music = al_load_sample("Sounds/Star_Wars.ogg");
-	emperor1 = al_load_sample("Sounds/Emperor1.ogg");
-	emperor2 = al_load_sample("Sounds/Emperor2.ogg");
-	emperor3 = al_load_sample("Sounds/Emperor3.ogg");
+	blaster = al_load_sample("XWing-Laser.ogg");
+	explosion = al_load_sample("Blast.ogg");
+	startGame = al_load_sample("xwing.ogg");
+	music = al_load_sample("Star_Wars.ogg");
+	emperor1 = al_load_sample("Emperor1.ogg");
+	emperor2 = al_load_sample("Emperor2.ogg");
+	emperor3 = al_load_sample("Emperor3.ogg");
 
 	//Load Pictures
-	picBullet=al_load_bitmap("Pictures/Lazer.png");
-	picShip =al_load_bitmap("Pictures/player1.png");
-	picEnemy = al_load_bitmap("Pictures/enemy.png");
-	MENU = al_load_bitmap("Pictures/starBG.png");
+	picBullet = al_load_bitmap("Lazer.png");
+	picShip = al_load_bitmap("player1.png");
+	picEnemy = al_load_bitmap("enemy.png");
+	Game = al_load_bitmap("Goodpic.png");
+	MENU = al_load_bitmap("starBG.png");
 
 	for (int i = 0; i < 5; i++)
 		SpaceBarrier[i] = al_load_bitmap(Images[i]);
@@ -169,89 +167,92 @@ int main(void)
 
 	for (int i = 0; i < 3; i++)
 		redBarrier[i].CurrentImage = SpaceBarrier[4];
-	
-	picHealth[0] = al_load_bitmap("Pictures/1.png");
-	picHealth[1] = al_load_bitmap("Pictures/2.png");
-	picHealth[2] = al_load_bitmap("Pictures/3.png");
-	picHealth[3] = al_load_bitmap("Pictures/4.png");
-	picHealth[4] = al_load_bitmap("Pictures/5.png");
-	picHealth[5] = al_load_bitmap("Pictures/6.png");
-	picHealth[6] = al_load_bitmap("Pictures/blank.png");
+
+
+	picHealth[0] = al_load_bitmap("1.png");
+	picHealth[1] = al_load_bitmap("2.png");
+	picHealth[2] = al_load_bitmap("3.png");
+	picHealth[3] = al_load_bitmap("4.png");
+	picHealth[4] = al_load_bitmap("5.png");
+	picHealth[5] = al_load_bitmap("6.png");
+	picHealth[6] = al_load_bitmap("blank.png");
 	for (int i = 0; i < 7; i++)
 		al_convert_mask_to_alpha(picHealth[i], al_map_rgb(0, 0, 0));
 
-	bgImage = al_load_bitmap("Pictures/starBG.png");
-	mgImage = al_load_bitmap("Pictures/starMG.jpg");
-	fgImage = al_load_bitmap("Pictures/starFG.png");
-	animShip = al_load_bitmap("Pictures/player2.png");
-	logo = al_load_bitmap("Pictures/logo.png");
-				
-	al_convert_mask_to_alpha(picShip,al_map_rgb(0,0,0));
+	bgImage = al_load_bitmap("starBG.png");
+	mgImage = al_load_bitmap("starMG.jpg");
+	fgImage = al_load_bitmap("starFG.png");
+	Player = al_load_bitmap("player1.png");
+
+
+	al_convert_mask_to_alpha(picShip, al_map_rgb(0, 0, 0));
 	al_convert_mask_to_alpha(picEnemy, al_map_rgb(0, 0, 0));
 	al_convert_mask_to_alpha(picBullet, al_map_rgb(0, 0, 0));
 	al_convert_mask_to_alpha(mgImage, al_map_rgb(0, 0, 0));
-	al_convert_mask_to_alpha(animShip, al_map_rgb(0, 0, 0));
+	al_convert_mask_to_alpha(Player, al_map_rgb(0, 0, 0));
 	
+
 	InitBackground(BG, 0, 0, 1, 0, 800, 600, -1, 1, bgImage);
 	InitBackground(MG, 0, 0, 3, 0, 2000, 768, -1, 1, mgImage);
 	InitBackground(FG, 0, 0, 5, 0, 800, 600, -1, 1, fgImage);
-	InitBackground(MM, 0, 0, 1, 0, 800, 600, -1, 1,MENU);
+	InitBackground(MM, 0, 0, 3, 0, 800, 600, -1, 1, MENU);
 	InitBarriers();
 
 	timer = al_create_timer(1.0 / FPS);
+	
 
 	al_set_display_icon(DISPLAY, picShip);
 	al_play_sample(music, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP, NULL);
 
-	TestQueue= al_create_event_queue();
-	al_register_event_source(TestQueue,al_get_keyboard_event_source());
-	al_register_event_source(TestQueue,al_get_display_event_source(DISPLAY));
-	al_register_event_source(TestQueue,al_get_timer_event_source(timer));
-
+	TestQueue = al_create_event_queue();
+	al_register_event_source(TestQueue, al_get_keyboard_event_source());
+	al_register_event_source(TestQueue, al_get_display_event_source(DISPLAY));
+	al_register_event_source(TestQueue, al_get_timer_event_source(timer));
+	
 	al_start_timer(timer);
+	
 
+	int score = 0;
 	int frameCount = 0;
 	int pos = (int)al_ustr_size(str);
-	font38 = al_load_font("Fonts/Legacy.ttf", 38, 0);
-	starFont = al_load_font("Fonts/STARWARS.TTF", 80, 0);
-	fontName = al_load_font("Fonts/Legacy.ttf", 38, 0);
-	
+	font38 = al_load_font("Legacy.ttf", 38, 0);
+	starFont = al_load_font("STARWARS.TTF", 55, 0);
+	fontName = al_load_font("Legacy.ttf", 38, 0);
+
 	while (!done)
 	{
 		ALLEGRO_EVENT GETKEY;
 		al_wait_for_event(TestQueue, &GETKEY);
-		
+
 
 		if (GETKEY.type == ALLEGRO_EVENT_DISPLAY_CLOSE)								//will allow clicking X button to close program
 		{
 			done = true;
 		}
-
 		else if (GETKEY.type == ALLEGRO_EVENT_TIMER)
 		{
 			redraw = true;
 			UpdateBackground(MM);
 			frameCount++;
-			if (keys[LEFT] && gameState == 2)
+			if (keys[LEFT])
 				player.MoveSpaceshipLeft();
-			if (keys[RIGHT] && gameState == 2)
+			if (keys[RIGHT])
 				player.MoveSpaceshipRight();
 			if (keys[SPACE])														//Spacebar will fire
 			{
 				if (gameState == 1) {
-					if(!startAnim)
-						al_play_sample(startGame, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL); //plays when spaceship flies across screen
-					startAnim = true;
+					al_play_sample(startGame, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL); //plays when spaceship flies across screen
+					gameState = 2;
 				}
-				else if(gameState ==2)
+				else if (gameState == 2)
 				{
-					if (playerBullet.status ==0)
+					if (playerBullet.status == 0)
 					{
 						al_play_sample(blaster, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 						playerBullet.status = 1;
 					}
 				}
-				
+
 			}
 			if (gameState == 2)
 			{
@@ -270,16 +271,14 @@ int main(void)
 			}
 		}
 
-		
-		else if (GETKEY.type==ALLEGRO_EVENT_KEY_DOWN)
+
+		else if (GETKEY.type == ALLEGRO_EVENT_KEY_DOWN)
 		{
-			switch(GETKEY.keyboard.keycode)
+			switch (GETKEY.keyboard.keycode)
 			{
 			case ALLEGRO_KEY_ESCAPE:													//esc to end the game
 				if (gameState == 2)
 					gameState = 3;
-				else if (gameState == 3)
-					gameState = 4;
 				else
 					done = true;
 				break;
@@ -290,17 +289,26 @@ int main(void)
 				keys[LEFT] = true;
 				break;
 			case ALLEGRO_KEY_SPACE:
-				keys[SPACE]=true;
+				keys[SPACE] = true;
 				break;
 			case ALLEGRO_KEY_BACKSPACE:											//backspace for name input
 				if (gameState == 3)
 					if (al_ustr_prev(str, &pos))
 						al_ustr_truncate(str, pos);
 				break;
+				if (gameState == 4)
+					gameState = 2;
+				break;
 			case ALLEGRO_KEY_ENTER:												//will display leaderboard once they press enter.
 				if (gameState == 3)
 					gameState = 4;
-					break;
+				break;
+
+			case ALLEGRO_KEY_L:
+
+				if (gameState == 1)
+					gameState = 4;
+				break;
 			}
 		}
 
@@ -331,7 +339,7 @@ int main(void)
 					input = 1;
 				}
 				pos += al_ustr_append_chr(str, GETKEY.keyboard.unichar);
-			}	
+			}
 		}
 
 		if (redraw && al_is_event_queue_empty(TestQueue)) //rendering
@@ -341,18 +349,21 @@ int main(void)
 			{
 				DrawBackground(MM);
 
-				if (startAnim)
+				if (GETKEY.type == ALLEGRO_EVENT_TIMER)
 				{
-					DrawAnimation(animShip, x);
+					if (GETKEY.timer.source == timer)
+					{
+						DrawAnimation(Player, y);
+					}
+
 				}
-				
-				al_draw_text(font38, al_map_rgb(255, 40, 78), width / 2, height- 750, ALLEGRO_ALIGN_CENTRE, "AMMST PRESENTS");
-				al_draw_bitmap(logo, 140, (height)-690, 0);
-				//al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH");
-				//al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height)-590, ALLEGRO_ALIGN_CENTRE, "INVADERS");
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height) - 150, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height -100) , ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
-				}
+
+			    al_draw_text(font38, al_map_rgb(255, 40, 78), width / 2, height - 750, ALLEGRO_ALIGN_CENTRE, "AMMST  PRESENTS");
+				al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height)-690, ALLEGRO_ALIGN_CENTRE, "DARTH   INVADERS");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height)-350, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 300), ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2) - 25, height - 250, ALLEGRO_ALIGN_CENTRE, "PRESS L TO DISPLAY THE LEADERBOARD");
+			}
 
 			else if (gameState == 2)	//main game
 			{
@@ -361,7 +372,7 @@ int main(void)
 				DrawBackground(FG);
 
 				UpdateBarrierImages(SpaceBarrier);
-				
+
 				redBarrier[0].drawIfActive(50, 500);
 				redBarrier[1].drawIfActive(435, 500);
 				redBarrier[2].drawIfActive(820, 500);
@@ -369,13 +380,13 @@ int main(void)
 
 				if (playerBullet.status == 1 && player.active)												//if bullet still active
 				{
-						playerBullet.Increment();															//bullet will move pos
-						al_draw_bitmap(picBullet, playerBullet.x_pos, playerBullet.y_pos, 0);				//redraw at new pos	
-						if (playerBullet.y_pos < 20)
-						{
-							playerBullet.status = 0;
-							updateBullet();
-						}
+					playerBullet.Increment();															//bullet will move pos
+					al_draw_bitmap(picBullet, playerBullet.x_pos, playerBullet.y_pos, 0);				//redraw at new pos	
+					if (playerBullet.y_pos < 20)
+					{
+						playerBullet.status = 0;
+						updateBullet();
+					}
 				}
 
 				if (enemyBullet.status == 1)
@@ -417,7 +428,7 @@ int main(void)
 				bool test = reachEnd();
 				for (int i = 0; i < NUM_COLUMNS; i++)
 				{
-					
+
 
 					for (int j = 0; j < NUM_ROWS; j++)
 					{
@@ -428,62 +439,51 @@ int main(void)
 							al_draw_bitmap(picEnemy, arrEnem[i][j].x_pos, arrEnem[i][j].y_pos, 0);
 						}
 					}
-									
+
 				}
 
-				al_draw_textf(font38, al_map_rgb(255, 0, 0), 10, 0, 0, "SCORE: %i", score);								
+				al_draw_textf(font38, al_map_rgb(255, 0, 0), 10, 0, 0, "SCORE: %i", score);
 			}
 
-			else if(gameState == 3) //end game
+			else if (gameState == 3) //end game
 			{
 				if (player.health == 0)
 				{
 					al_play_sample(explosion, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-					if(frameCount % 7 == 0)
+					al_draw_text(starFont, al_map_rgb(255, 0, 0), width / 2, (height / 2) - 250, 0, "PRESS BACKSPACE TO PLAY AGAIN");
+					if (frameCount % 7 == 0)
 						al_play_sample(emperor3, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 					else if (frameCount % 3 == 0)
 						al_play_sample(emperor2, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 					else
 						al_play_sample(emperor1, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 
-					player.health = 1;															// will only sound once
+					player.health = 1;															// <--- shortcut method to make it only sound once :p
 				}
 
-				//check to determine if he made a highscore
-				if(score>lowScore)
+				//check to determine if he made a highscore , 
+				if (score>lowScore)
 					isHighscore = true;
 
 				nameString = al_cstr_dup(str);
-				al_draw_textf(starFont, al_map_rgb(255, 0, 0), width / 2, height / 2 - 200, ALLEGRO_ALIGN_CENTRE, "FINAL SCORE: %i", score);
+				al_draw_textf(starFont, al_map_rgb(255, 0, 0), width / 2 - 250, height / 2 - 200, 0, "FINAL SCORE: %i", score);
 
-				if(isHighscore)
-					al_draw_text(fontName, al_map_rgb_f(1, 1, 1), width / 2, height / 2 - 100, ALLEGRO_ALIGN_CENTRE, nameString);
+				if (isHighscore)
+					al_draw_text(fontName, al_map_rgb_f(1, 1, 1), width / 2 - 250, height / 2 - 100, ALLEGRO_ALIGN_LEFT, nameString);
 			}
 
 			else if (gameState == 4)	//highscores
 			{
-
-				if (isHighscore && output == 0)
-				{
-					writeScore();
-					output = 1;
-				}
-
-				al_draw_textf(starFont, al_map_rgb(255, 0, 0), width/2,40, ALLEGRO_ALIGN_CENTRE, "HIGHSCORES");
-
-				for (int i = 0; i < 10; i++)
-				{
-					al_draw_textf(font38, al_map_rgb(255, 0, 0), width / 2 -80, 120 + i*60, ALLEGRO_ALIGN_RIGHT,"%i", arrScores[i].score);
-					al_draw_textf(font38, al_map_rgb(255, 0, 0), width / 2 + 80, 120 + i * 60, ALLEGRO_ALIGN_LEFT, "%s", arrScores[i].name.c_str());
-				}						
-				
+				string name = nameString;
+				//if (isHighscore) -> write name & score to textfile & then SHOW LEADERBOARD here || if not highscore. just show leaderboard
 			}
 
 			al_flip_display();																	//flip display to show all drawn objects
 			al_clear_to_color(al_map_rgb(0, 0, 0));												//background colour
-		 }
+		}
 	}
 
+	
 	al_destroy_sample(blaster);
 	al_destroy_sample(explosion);
 	al_destroy_sample(startGame);
@@ -491,6 +491,7 @@ int main(void)
 	al_destroy_sample(emperor1);
 	al_destroy_sample(emperor2);
 	al_destroy_sample(emperor3);
+	al_destroy_bitmap(Player);
 
 	al_destroy_event_queue(TestQueue);
 	al_destroy_timer(timer);
@@ -498,8 +499,7 @@ int main(void)
 
 	al_destroy_font(font38);
 	al_destroy_font(starFont);
-	al_destroy_font(fontName);
-	
+
 	al_destroy_bitmap(Game);
 	al_destroy_bitmap(MENU);
 	al_destroy_bitmap(picEnemy);
@@ -508,12 +508,10 @@ int main(void)
 	al_destroy_bitmap(bgImage);
 	al_destroy_bitmap(mgImage);
 	al_destroy_bitmap(fgImage);
-	al_destroy_bitmap(animShip);
-	al_destroy_bitmap(logo);
 	for (int i = 0; i < 7; i++)
 		al_destroy_bitmap(picHealth[i]);
-	for (int i = 0; i < 5; i++)
-		al_destroy_bitmap(SpaceBarrier[i]);	
+
+	// ADD YOUR BITMAPS ETC TO al_destroy !!
 
 	return 0;
 }
@@ -587,7 +585,7 @@ void collideEnemy(int &score)
 {
 	if (playerBullet.status)
 	{
-		for (int i = 0; i < NUM_COLUMNS; i++)											
+		for (int i = 0; i < NUM_COLUMNS; i++)
 		{
 			for (int j = 0; j < NUM_ROWS; j++)															//collision detection ahead. Proceed with caution
 			{
@@ -600,7 +598,7 @@ void collideEnemy(int &score)
 					{
 						playerBullet.status = 0;														//bullet set to not active
 						arrEnem[i][j].active = false;													//enemy set to not active
-						
+
 						switch (j)
 						{
 						case 0:
@@ -611,7 +609,7 @@ void collideEnemy(int &score)
 							break;
 						case 2:
 							score += 20;
-							break;						
+							break;
 						default:
 							score += 10;
 							break;
@@ -695,11 +693,11 @@ bool reachEnd()																						//returns true if any enemy hits either of 
 {
 	for (int i = 0; i < NUM_COLUMNS; i++)
 	{
-		for (int j = 0; j < NUM_ROWS; j++)										
+		for (int j = 0; j < NUM_ROWS; j++)
 		{
 			if (arrEnem[i][j].active)																//checks if enemy active
 			{
-				if (width-80 < arrEnem[i][j].x_pos && arrEnem[i][j].speed > 0)						//if moving to the right and close to right wall
+				if (width - 80 < arrEnem[i][j].x_pos && arrEnem[i][j].speed > 0)						//if moving to the right and close to right wall
 				{
 					return true;
 					break;
@@ -732,18 +730,18 @@ void UpdateBackground(BackGround &back)
 {
 	back.x += back.velX * back.dirX;
 	if (back.x + back.WIDTH <= 0)
-			back.x = 0;
-	
+		back.x = 0;
+
 }
 
 void DrawBackground(BackGround &back)
 {
 	al_draw_bitmap(back.image, back.x, back.y, 0);
 	al_draw_bitmap(back.image, back.x + back.WIDTH, back.HEIGHT, 0);
-	al_draw_bitmap(back.image, back.x, back.HEIGHT, 0);		
+	al_draw_bitmap(back.image, back.x, back.HEIGHT, 0);
 	al_draw_bitmap(back.image, back.x + back.WIDTH, back.y, 0);
 
-	
+
 }
 
 
@@ -778,7 +776,7 @@ void CollideBarrier()
 		if (redBarrier[i].active && enemyBullet.status == 1)
 		{
 			if (enemyBullet.x_pos >(redBarrier[i].x_pos - redBarrier[i].Bleft) && enemyBullet.x_pos<(redBarrier[i].x_pos + redBarrier[i].Bright)
-			&& enemyBullet.y_pos>(redBarrier[i].y_pos - redBarrier[i].BHeight) && enemyBullet.y_pos < (redBarrier[i].y_pos + redBarrier[i].BHeight))
+				&& enemyBullet.y_pos>(redBarrier[i].y_pos - redBarrier[i].BHeight) && enemyBullet.y_pos < (redBarrier[i].y_pos + redBarrier[i].BHeight))
 			{
 				if (redBarrier[i].life_points != 0)
 				{
@@ -796,7 +794,7 @@ void CollideBarrier()
 
 void BulletBarrierCollide()
 {
-	for (int i=0; i < 3; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		if (redBarrier[i].active && playerBullet.status == 1)
 		{
@@ -855,7 +853,7 @@ void EnemyReachEnd()
 				}
 			}
 		}
-	}		
+	}
 }
 
 void Reactivate_Barriers()
@@ -890,65 +888,15 @@ void UpdateBarrierImages(ALLEGRO_BITMAP *SpaceBarrier[])
 	}
 }
 
-void DrawAnimation(ALLEGRO_BITMAP *pic, int &x)
+void DrawAnimation(ALLEGRO_BITMAP *X, int &y)
 {
-	al_draw_bitmap(pic, x, 400, 0);
-	x = x + 6;
 
-	if (x > width - 20)
+	al_draw_bitmap(X, 50, y, 0);
+	al_draw_bitmap(X, 875, y, 0);
+	y = y - 1;
+	if (y == 0)
 	{
-		gameState = 2;
-	}
-}
-
-void readScores()
-{
-	ifstream myfile("scores.txt");
-	string line;
-	Highscores temp;
-	int count = 0;
-
-	while (myfile.good())
-	{
-		getline(myfile, line);
-		//now you must split the line. Easiest way to do it is like this: 
-		temp.score = stoi(line.substr(0, (int)line.find(' '))); //get substring from index 0 to space and convert it to integer 
-		temp.name = line.substr((int)line.find(' ') + 1); //get substring from space and to the end of the string 
-		
-		arrScores[count].name = temp.name;
-		arrScores[count].score = temp.score;
-		count++;
+		y = 600;
 	}
 
-	myfile.close();
-	lowScore = arrScores[9].score;
-}
-
-
-void writeScore()
-{
-	int pos = 9 - 1;
-	int i = 0;
-
-	while (score > arrScores[pos].score && pos >= 0)
-	{
-		arrScores[pos + 1] = arrScores[pos];
-		pos--;
-	}
-	arrScores[pos + 1].score = score;
-	arrScores[pos + 1].name = nameString;
-
-	ofstream OutputFile("scores.txt");
-	for (i = 0; i < 9; i++)
-	{
-		if (arrScores[i].name == "")
-			arrScores[i].name = "NAME";
-		OutputFile << arrScores[i].score << " " << arrScores[i].name << endl;
-	}
-
-	if (arrScores[i].name == "")
-		arrScores[i].name = "NAME";
-	OutputFile << arrScores[i].score << " " << arrScores[i].name;
-
-	OutputFile.close();
 }
