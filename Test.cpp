@@ -39,10 +39,13 @@ char *nameString;
 bool startAnim = false;
 bool isHighscore = false;																//will be true if user's score is higher than lowest highscore
 int lowScore = 0;																		//value of lowest highscore
+const int FPS = 60;
+bool done = false;
+bool redraw = true;
 
 //METHODS
 void setEnemy();
-void ResetPlayer();
+void gameRestart();
 void collideEnemy(int&);
 void collidePlayer();
 void moveDown(int&);
@@ -86,10 +89,7 @@ int main(void)
 	srand((unsigned)time(NULL));
 
 	//variables
-	const int FPS = 60;
-	bool done = false;
-	bool redraw = true;
-	const int frames = 28;
+
 
 	if (!al_init())
 	{
@@ -145,7 +145,7 @@ int main(void)
 	}
 
 	//load sounds
-	al_reserve_samples(4);
+	al_reserve_samples(7);
 	blaster = al_load_sample("Sounds/XWing-Laser.ogg");
 	explosion = al_load_sample("Sounds/Blast.ogg");
 	startGame = al_load_sample("Sounds/xwing.ogg");
@@ -309,13 +309,7 @@ int main(void)
 
 				if (gameState == 4)
 				{
-					DrawAnimation(animShip, x);
-					readScores();																					//reads in scores from textfile
-					Reactivate_Enemies();
-					Reactivate_Barriers();
-					setEnemy();
-					ResetPlayer();
-					gameState = 1;
+					gameRestart();
 					al_ustr_free(str);
 					str = al_ustr_new("ENTER NAME");
 					break;
@@ -466,7 +460,7 @@ int main(void)
 					else
 						al_play_sample(emperor1, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 
-					player.health = 1;															// will only sound once
+					player.health = 1;															//will only sound once
 				}
 
 				//check to determine if he made a highscore
@@ -828,7 +822,6 @@ void BulletBarrierCollide()
 
 void updateEnemyCount()
 {
-
 	if (numAlive == 0)
 	{
 		EnemyWaveCount++;
@@ -882,7 +875,6 @@ void Reactivate_Barriers()
 		redBarrier[b].life_points = 5;
 		redBarrier[b].active = true;
 	}
-
 }
 
 void UpdateBarrierImages(ALLEGRO_BITMAP *SpaceBarrier[])
@@ -941,7 +933,6 @@ void readScores()
 	lowScore = arrScores[9].score;
 }
 
-
 void writeScore()
 {
 	int pos = 9 - 1;
@@ -970,8 +961,13 @@ void writeScore()
 	OutputFile.close();
 }
 
-void ResetPlayer()
+void gameRestart()
 {
+	gameState = 1;
+	readScores();																					//reads in scores from textfile
+	Reactivate_Enemies();
+	Reactivate_Barriers();
+	setEnemy();
 	player.active = true;
 	player.health = 60;
 	score = 0;
