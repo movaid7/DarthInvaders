@@ -294,8 +294,8 @@ int main(void)
 				keys[SPACE] = true;
 				break;
 			case ALLEGRO_KEY_L:
-				if (gameState == 4)
-					gameState = 1;
+				if (gameState == 1)
+					gameState = 4;
 				break;
 			case ALLEGRO_KEY_BACKSPACE:											//backspace for name input
 				if (gameState == 3)
@@ -366,9 +366,9 @@ int main(void)
 
 				al_draw_text(font38, al_map_rgb(255, 40, 78), width / 2, height - 750, ALLEGRO_ALIGN_CENTRE, "AMMST PRESENTS");
 				al_draw_bitmap(logo, 140, (height)-690, 0);
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height)-350, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 300), ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 250), ALLEGRO_ALIGN_CENTRE, "PRESS L TO VIEW THE LEADERBOARD");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height)-300, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 250), ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 200), ALLEGRO_ALIGN_CENTRE, "PRESS L TO VIEW THE LEADERBOARD");
 			}
 
 			else if (gameState == 2)	//main game
@@ -453,6 +453,7 @@ int main(void)
 
 			else if (gameState == 3) //end game
 			{
+				
 				if (player.health == 0)
 				{
 					al_play_sample(explosion, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
@@ -479,7 +480,7 @@ int main(void)
 
 			else if (gameState == 4)	//highscores
 			{
-
+				
 				if (isHighscore && output == 0)
 				{
 					writeScore();
