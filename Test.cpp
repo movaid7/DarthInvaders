@@ -12,7 +12,6 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
-#include <stdlib.h>
 
 #include "Enemy.h"
 #include "Spaceship.h"
@@ -41,7 +40,7 @@ bool startAnim = false;
 bool isHighscore = false;																//will be true if user's score is higher than lowest highscore
 int lowScore = 0;																		//value of lowest highscore
 
-																						//METHODS
+//METHODS
 void setEnemy();
 void ResetPlayer();
 void collideEnemy(int&);
@@ -90,7 +89,6 @@ int main(void)
 	const int FPS = 60;
 	bool done = false;
 	bool redraw = true;
-	int CurrentFrame = 0;
 	const int frames = 28;
 
 	if (!al_init())
@@ -311,14 +309,18 @@ int main(void)
 
 				if (gameState == 4)
 				{
+					DrawAnimation(animShip, x);
+					readScores();																					//reads in scores from textfile
 					Reactivate_Enemies();
 					Reactivate_Barriers();
 					setEnemy();
 					ResetPlayer();
 					gameState = 1;
+					al_ustr_free(str);
+					str = al_ustr_new("ENTER NAME");
 					break;
 				}
-
+				break;
 			}
 		}
 
@@ -366,9 +368,9 @@ int main(void)
 
 				al_draw_text(font38, al_map_rgb(255, 40, 78), width / 2, height - 750, ALLEGRO_ALIGN_CENTRE, "AMMST PRESENTS");
 				al_draw_bitmap(logo, 140, (height)-690, 0);
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height)-300, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 250), ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 200), ALLEGRO_ALIGN_CENTRE, "PRESS L TO VIEW THE LEADERBOARD");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height)-250, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 200), ALLEGRO_ALIGN_CENTRE, "PRESS L TO VIEW HIGHSCORES");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 150), ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
 			}
 
 			else if (gameState == 2)	//main game
@@ -760,10 +762,7 @@ void DrawBackground(BackGround &back)
 	al_draw_bitmap(back.image, back.x + back.WIDTH, back.HEIGHT, 0);
 	al_draw_bitmap(back.image, back.x, back.HEIGHT, 0);
 	al_draw_bitmap(back.image, back.x + back.WIDTH, back.y, 0);
-
-
 }
-
 
 void InitBarriers()
 {
@@ -910,7 +909,7 @@ void UpdateBarrierImages(ALLEGRO_BITMAP *SpaceBarrier[])
 
 void DrawAnimation(ALLEGRO_BITMAP *pic, int &x)
 {
-	al_draw_bitmap(pic, x, 400, 0);
+	al_draw_bitmap(pic, x, 350, 0);
 	x = x + 6;
 
 	if (x > width - 20)
@@ -973,8 +972,15 @@ void writeScore()
 
 void ResetPlayer()
 {
-
 	player.active = true;
 	player.health = 60;
 	score = 0;
+	numAlive = NUM_COLUMNS*NUM_ROWS;
+	EnemyWaveCount = 0;
+	input = 0;																			//count variable to ensure action occurs only once
+	output = 0;																			//count variable to ensure action occurs only once
+	x = 20;																				//initial position of animated ship	*nameString;
+	startAnim = false;
+	isHighscore = false;																//will be true if user's score is higher than lowest highscore																	//value of lowest highscore
 }
+
