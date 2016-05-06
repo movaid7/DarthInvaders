@@ -43,6 +43,7 @@ int lowScore = 0;																		//value of lowest highscore
 
 																						//METHODS
 void setEnemy();
+void ResetPlayer();
 void collideEnemy(int&);
 void collidePlayer();
 void moveDown(int&);
@@ -292,6 +293,10 @@ int main(void)
 			case ALLEGRO_KEY_SPACE:
 				keys[SPACE] = true;
 				break;
+			case ALLEGRO_KEY_L:
+				if (gameState == 4)
+					gameState = 1;
+				break;
 			case ALLEGRO_KEY_BACKSPACE:											//backspace for name input
 				if (gameState == 3)
 					if (al_ustr_prev(str, &pos))
@@ -299,8 +304,21 @@ int main(void)
 				break;
 			case ALLEGRO_KEY_ENTER:												//will display leaderboard once they press enter.
 				if (gameState == 3)
+				{
 					gameState = 4;
-				break;
+					break;
+				}
+
+				if (gameState == 4)
+				{
+					Reactivate_Enemies();
+					Reactivate_Barriers();
+					setEnemy();
+					ResetPlayer();
+					gameState = 1;
+					break;
+				}
+
 			}
 		}
 
@@ -348,10 +366,9 @@ int main(void)
 
 				al_draw_text(font38, al_map_rgb(255, 40, 78), width / 2, height - 750, ALLEGRO_ALIGN_CENTRE, "AMMST PRESENTS");
 				al_draw_bitmap(logo, 140, (height)-690, 0);
-				//al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height) - 690, ALLEGRO_ALIGN_CENTRE, "DARTH");
-				//al_draw_text(starFont, al_map_rgb(255, 40, 78), (width / 2), (height)-590, ALLEGRO_ALIGN_CENTRE, "INVADERS");
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height)-150, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 100), ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height)-350, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 300), ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 250), ALLEGRO_ALIGN_CENTRE, "PRESS L TO VIEW THE LEADERBOARD");
 			}
 
 			else if (gameState == 2)	//main game
@@ -951,4 +968,12 @@ void writeScore()
 	OutputFile << arrScores[i].score << " " << arrScores[i].name;
 
 	OutputFile.close();
+}
+
+void ResetPlayer()
+{
+
+	player.active = true;
+	player.health = 60;
+	score = 0;
 }
