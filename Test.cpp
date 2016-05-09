@@ -751,7 +751,7 @@ void UpdateBackground(BackGround &back)
 
 	if (back.WIDTH < 1024 && back.x  + back.WIDTH <= 100)
 		back.x = 0;
-	else if (back.WIDTH > 1024 && back.x + back.WIDTH <= 20)
+	else if (back.WIDTH > 1024 && back.x + back.WIDTH <= 0)
 		back.x = 0;
 }
 

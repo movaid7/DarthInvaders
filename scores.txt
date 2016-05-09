@@ -1,6 +1,6 @@
-20 mo
-0 NAME
-0 NAME
+1030 qwerty
+720 ENTER NAME
+0 name
 0 NAME
 0 NAME
 0 NAME
