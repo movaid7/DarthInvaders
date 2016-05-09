@@ -102,6 +102,7 @@ int main(void)
 	ALLEGRO_BITMAP *picHealth[7];
 	ALLEGRO_BITMAP *picShip = NULL;
 	ALLEGRO_BITMAP *picBullet = NULL;
+	ALLEGRO_BITMAP *picGreenLazer = NULL;
 	ALLEGRO_BITMAP *picEnemy = NULL;
 	ALLEGRO_BITMAP *Game = NULL;
 	ALLEGRO_BITMAP *MENU = NULL;
@@ -118,6 +119,7 @@ int main(void)
 	ALLEGRO_TIMER *timer = NULL;
 	ALLEGRO_FONT *font38 = NULL;
 	ALLEGRO_FONT *starFont = NULL;
+	ALLEGRO_FONT *starOutline = NULL;
 	ALLEGRO_FONT *fontName = NULL;
 	ALLEGRO_SAMPLE *blaster = NULL;
 	ALLEGRO_SAMPLE *explosion = NULL;
@@ -146,7 +148,7 @@ int main(void)
 		return -1;
 	}
 
-	//load sounds
+	//Load Sounds
 	al_reserve_samples(7);
 	blaster = al_load_sample("Sounds/XWing-Laser.ogg");
 	explosion = al_load_sample("Sounds/Blast.ogg");
@@ -155,11 +157,12 @@ int main(void)
 	emperor1 = al_load_sample("Sounds/Emperor1.ogg");
 	emperor2 = al_load_sample("Sounds/Emperor2.ogg");
 	emperor3 = al_load_sample("Sounds/Emperor3.ogg");
-	State3 = al_load_bitmap("Pictures/EARTH.jpg");
-	State4 = al_load_bitmap("Pictures/SpaceShips.jpg");
+	State3 = al_load_bitmap("Pictures/EARTH.png");
+	State4 = al_load_bitmap("Pictures/DeathStar.png");
 
 	//Load Pictures
 	picBullet = al_load_bitmap("Pictures/Lazer.png");
+	picGreenLazer = al_load_bitmap("Pictures/GreenLazer.png");
 	picShip = al_load_bitmap("Pictures/player1.png");
 	picEnemy = al_load_bitmap("Pictures/enemy.png");
 	MENU = al_load_bitmap("Pictures/starBG.png");
@@ -179,7 +182,7 @@ int main(void)
 	picHealth[3] = al_load_bitmap("Pictures/4.png");
 	picHealth[4] = al_load_bitmap("Pictures/5.png");
 	picHealth[5] = al_load_bitmap("Pictures/6.png");
-	picHealth[6] = al_load_bitmap("Pictures/blank.png");
+	picHealth[6] = al_load_bitmap("Pictures/blank1.png");
 	for (int i = 0; i < 7; i++)
 		al_convert_mask_to_alpha(picHealth[i], al_map_rgb(0, 0, 0));
 
@@ -217,7 +220,8 @@ int main(void)
 	int pos = (int)al_ustr_size(str);
 	font38 = al_load_font("Fonts/Legacy.ttf", 38, 0);
 	starFont = al_load_font("Fonts/STARWARS.TTF", 80, 0);
-	fontName = al_load_font("Fonts/Legacy.ttf", 38, 0);
+	starOutline = al_load_font("Fonts/STARWARS.TTF", 81, 0);
+	fontName = al_load_font("Fonts/Legacy.ttf", 50, 0);
 
 	while (!done)
 	{
@@ -295,7 +299,7 @@ int main(void)
 			case ALLEGRO_KEY_SPACE:
 				keys[SPACE] = true;
 				break;
-			case ALLEGRO_KEY_L:
+			case ALLEGRO_KEY_H:
 				if (gameState == 1)
 					gameState = 4;
 				break;
@@ -367,7 +371,7 @@ int main(void)
 				al_draw_text(font38, al_map_rgb(255, 40, 78), width / 2, height - 750, ALLEGRO_ALIGN_CENTRE, "AMMST PRESENTS");
 				al_draw_bitmap(logo, 140, (height)-690, 0);
 				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height)-250, ALLEGRO_ALIGN_CENTRE, "PRESS SPACE TO START");
-				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 200), ALLEGRO_ALIGN_CENTRE, "PRESS L TO VIEW HIGHSCORES");
+				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 200), ALLEGRO_ALIGN_CENTRE, "PRESS H TO VIEW HIGHSCORES");
 				al_draw_text(font38, al_map_rgb(255, 40, 78), (width / 2), (height - 150), ALLEGRO_ALIGN_CENTRE, "PRESS ESC TO EXIT");
 			}
 
@@ -387,7 +391,7 @@ int main(void)
 				if (playerBullet.status == 1 && player.active)												//if bullet still active
 				{
 					playerBullet.Increment();															//bullet will move pos
-					al_draw_bitmap(picBullet, playerBullet.x_pos, playerBullet.y_pos, 0);				//redraw at new pos	
+					al_draw_bitmap(picGreenLazer, playerBullet.x_pos, playerBullet.y_pos, 0);				//redraw at new pos	
 					if (playerBullet.y_pos < 20)
 					{
 						playerBullet.status = 0;
@@ -453,7 +457,8 @@ int main(void)
 
 			else if (gameState == 3) //end game
 			{
-				al_draw_bitmap(State3, 0, 0, 0);
+				al_draw_bitmap(State3, 0, 0, ALLEGRO_ALIGN_CENTRE);
+				DrawAnimation(animShip, x);
 				if (player.health == 0)
 				{
 					al_play_sample(explosion, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
@@ -472,38 +477,35 @@ int main(void)
 					isHighscore = true;
 
 				nameString = al_cstr_dup(str);
-				al_draw_textf(starFont, al_map_rgb(255, 0, 0), width / 2, height / 2 - 200, ALLEGRO_ALIGN_CENTRE, "FINAL SCORE: %i", score);
-
+				al_draw_textf(starFont, al_map_rgb(45,119,166), width / 2, 50, ALLEGRO_ALIGN_CENTRE, "FINAL SCORE: %i", score);
+				
 				if (isHighscore)
-					al_draw_text(fontName, al_map_rgb_f(1, 1, 1), width / 2, height / 2 - 100, ALLEGRO_ALIGN_CENTRE, nameString);
+					al_draw_text(fontName, al_map_rgb_f(1, 1, 1), width / 2, 120, ALLEGRO_ALIGN_CENTRE, nameString);
 			}
 
 			else if (gameState == 4)	//highscores
 			{
 				al_draw_bitmap(State4, 0, 0, 0);
-				al_draw_text(font38, al_map_rgb(255, 0, 0), 40, 90, NULL, "PRESS");
-				al_draw_text(font38, al_map_rgb(255, 0, 0), 40, 120, NULL, "ENTER");
-				al_draw_text(font38, al_map_rgb(255, 0, 0), 40, 150, NULL, "TO");
-				al_draw_text(font38, al_map_rgb(255, 0, 0), 40, 180, NULL, "VIEW");
-				al_draw_text(font38, al_map_rgb(255, 0, 0), 40, 210, NULL, "MENU");
-
+				al_draw_text(font38, al_map_rgb(255, 255, 0), width/2, height-40, ALLEGRO_ALIGN_CENTRE, "PRESS ENTER TO RETURN TO MAIN MENU");
+				
+				/*
 				al_draw_text(font38, al_map_rgb(255, 0, 0), width - 140, 90, NULL, "PRESS");
 				al_draw_text(font38, al_map_rgb(255, 0, 0), width - 140, 120, NULL, "ESC");
 				al_draw_text(font38, al_map_rgb(255, 0, 0), width - 140, 150, NULL, "TO");
 				al_draw_text(font38, al_map_rgb(255, 0, 0), width - 140, 180, NULL, "EXIT");
-
+				*/
 				if (isHighscore && output == 0)
 				{
 					writeScore();
 					output = 1;
 				}
 
-				al_draw_textf(starFont, al_map_rgb(255, 0, 0), width / 2, 40, ALLEGRO_ALIGN_CENTRE, "HIGHSCORES");
+				al_draw_textf(starFont, al_map_rgb(255, 255, 0), width / 2, 40, ALLEGRO_ALIGN_CENTRE, "HIGHSCORES");
 
 				for (int i = 0; i < 10; i++)
 				{
-					al_draw_textf(font38, al_map_rgb(255, 0, 0), width / 2 - 80, 120 + i * 60, ALLEGRO_ALIGN_RIGHT, "%i", arrScores[i].score);
-					al_draw_textf(font38, al_map_rgb(255, 0, 0), width / 2 + 80, 120 + i * 60, ALLEGRO_ALIGN_LEFT, "%s", arrScores[i].name.c_str());
+					al_draw_textf(font38, al_map_rgb(255, 0, 0), width / 2 - 60, 120 + i * 60, ALLEGRO_ALIGN_RIGHT, "%i", arrScores[i].score);
+					al_draw_textf(font38, al_map_rgb(255, 0, 0), width / 2 + 60, 120 + i * 60, ALLEGRO_ALIGN_LEFT, "%s", arrScores[i].name.c_str());
 				}
 
 			}
@@ -536,6 +538,7 @@ int main(void)
 	al_destroy_bitmap(picEnemy);
 	al_destroy_bitmap(picShip);
 	al_destroy_bitmap(picBullet);
+	al_destroy_bitmap(picGreenLazer);
 	al_destroy_bitmap(bgImage);
 	al_destroy_bitmap(mgImage);
 	al_destroy_bitmap(fgImage);
@@ -762,9 +765,11 @@ void InitBackground(BackGround &back, float x, float y, float velx, float vely, 
 void UpdateBackground(BackGround &back)
 {
 	back.x += back.velX * back.dirX;
-	if (back.x + back.WIDTH <= 0)
-		back.x = 0;
 
+	if (back.WIDTH < 1024 && back.x + back.WIDTH <= 100)
+		back.x = 0;
+	else if (back.WIDTH > 1024 && back.x + back.WIDTH <= 0)
+		back.x = 0;
 }
 
 void DrawBackground(BackGround &back)
@@ -919,11 +924,19 @@ void UpdateBarrierImages(ALLEGRO_BITMAP *SpaceBarrier[])
 void DrawAnimation(ALLEGRO_BITMAP *pic, int &x)
 {
 	al_draw_bitmap(pic, x, 350, 0);
-	x = x + 6;
+	
 
-	if (x > width - 20)
+	if (gameState == 1)
 	{
-		gameState = 2;
+		x = x + 6;
+		if(x > width - 20)
+			gameState = 2;
+	}
+	else if (gameState == 3)
+	{
+		x = x + 3;
+		if (x > width - 5)
+			x = -10;
 	}
 }
 
@@ -967,12 +980,12 @@ void writeScore()
 	for (i = 0; i < 9; i++)
 	{
 		if (arrScores[i].name == "")
-			arrScores[i].name = "NAME";
+			arrScores[i].name = "NO NAME";
 		OutputFile << arrScores[i].score << " " << arrScores[i].name << endl;
 	}
 
 	if (arrScores[i].name == "")
-		arrScores[i].name = "NAME";
+		arrScores[i].name = "NO NAME";
 	OutputFile << arrScores[i].score << " " << arrScores[i].name;
 
 	OutputFile.close();
