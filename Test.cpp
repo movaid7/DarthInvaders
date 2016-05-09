@@ -102,6 +102,7 @@ int main(void)
 	ALLEGRO_BITMAP *picHealth[7];
 	ALLEGRO_BITMAP *picShip = NULL;
 	ALLEGRO_BITMAP *picBullet = NULL;
+	ALLEGRO_BITMAP *picGreenLazer = NULL;
 	ALLEGRO_BITMAP *picEnemy = NULL;
 	ALLEGRO_BITMAP *Game = NULL;
 	ALLEGRO_BITMAP *MENU = NULL;
@@ -156,6 +157,7 @@ int main(void)
 
 	//Load Pictures
 	picBullet = al_load_bitmap("Pictures/Lazer.png");
+	picGreenLazer = al_load_bitmap("Pictures/GreenLazer.png");
 	picShip = al_load_bitmap("Pictures/player1.png");
 	picEnemy = al_load_bitmap("Pictures/enemy.png");
 	MENU = al_load_bitmap("Pictures/starBG.png");
@@ -175,7 +177,7 @@ int main(void)
 	picHealth[3] = al_load_bitmap("Pictures/4.png");
 	picHealth[4] = al_load_bitmap("Pictures/5.png");
 	picHealth[5] = al_load_bitmap("Pictures/6.png");
-	picHealth[6] = al_load_bitmap("Pictures/blank.png");
+	picHealth[6] = al_load_bitmap("Pictures/blank1.png");
 	for (int i = 0; i < 7; i++)
 		al_convert_mask_to_alpha(picHealth[i], al_map_rgb(0, 0, 0));
 
@@ -383,7 +385,7 @@ int main(void)
 				if (playerBullet.status == 1 && player.active)												//if bullet still active
 				{
 					playerBullet.Increment();															//bullet will move pos
-					al_draw_bitmap(picBullet, playerBullet.x_pos, playerBullet.y_pos, 0);				//redraw at new pos	
+					al_draw_bitmap(picGreenLazer, playerBullet.x_pos, playerBullet.y_pos, 0);				//redraw at new pos	
 					if (playerBullet.y_pos < 20)
 					{
 						playerBullet.status = 0;
@@ -519,6 +521,7 @@ int main(void)
 	al_destroy_bitmap(picEnemy);
 	al_destroy_bitmap(picShip);
 	al_destroy_bitmap(picBullet);
+	al_destroy_bitmap(picGreenLazer);
 	al_destroy_bitmap(bgImage);
 	al_destroy_bitmap(mgImage);
 	al_destroy_bitmap(fgImage);
@@ -745,9 +748,11 @@ void InitBackground(BackGround &back, float x, float y, float velx, float vely, 
 void UpdateBackground(BackGround &back)
 {
 	back.x += back.velX * back.dirX;
-	if (back.x + back.WIDTH <= 0)
-		back.x = 0;
 
+	if (back.WIDTH < 1024 && back.x  + back.WIDTH <= 100)
+		back.x = 0;
+	else if (back.WIDTH > 1024 && back.x + back.WIDTH <= 20)
+		back.x = 0;
 }
 
 void DrawBackground(BackGround &back)
