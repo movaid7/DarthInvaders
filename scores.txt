@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 1030 qwerty
 720 ENTER NAME
 0 name
@@ -8,3 +9,6 @@
 0 NAME
 0 NAME
 0 NAME
+=======
+0 name
+>>>>>>> 57cab303b66f250bb68b2d5566fdf713aac546e7
