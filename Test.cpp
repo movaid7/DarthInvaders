@@ -75,10 +75,10 @@ Bullet		enemyBullet(0, 0, 10, false);
 Enemy		arrEnem[NUM_COLUMNS][NUM_ROWS];												//array of objects
 Barrier		redBarrier[3];
 Highscores	arrScores[11];
-BackGround BG;
-BackGround MG;
-BackGround FG;
-BackGround MM;
+BackGround	BG;
+BackGround	MG;
+BackGround	FG;
+BackGround	MM;
 
 
 int main(void)
